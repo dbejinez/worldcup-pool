@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    h1, h2, h3 {
+        font-family: 'Archivo', 'Figtree', ui-sans-serif, system-ui, sans-serif;
+        letter-spacing: -0.01em;
+    }
+}
