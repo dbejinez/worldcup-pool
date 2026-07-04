@@ -179,4 +179,70 @@ class ScoringTest extends TestCase
             ->put(route('pools.results.update', $pool), ['winners' => []])
             ->assertForbidden();
     }
+
+    public function test_non_r32_start_pool_results_do_not_wipe_seeded_teams(): void
+    {
+        $manager = User::factory()->create();
+        $this->actingAs($manager)->post(route('pools.store'), ['name' => 'QF Pool', 'method' => 'full', 'start_round' => 'QF']);
+        $pool = Pool::first();
+
+        $matchups = [];
+        for ($i = 0; $i < 4; $i++) {
+            $matchups[] = ['a' => 'Team ' . ($i * 2 + 1), 'b' => 'Team ' . ($i * 2 + 2)];
+        }
+        $this->actingAs($manager)->post(route('pools.bracket.store', $pool), ['matchups' => $matchups]);
+        $pool->update(['deadline_utc' => now()->addDays(2), 'status' => 'open']);
+        $pool = $pool->fresh();
+
+        // Record QF results.
+        $this->enterRound($manager, $pool, 'QF');
+
+        // Seeded QF teams must still be present after propagation.
+        foreach ($pool->matches()->where('round', 'QF')->get() as $qf) {
+            $this->assertNotNull($qf->fresh()->team_a_id, "QF match {$qf->id} team_a_id was wiped");
+            $this->assertNotNull($qf->fresh()->team_b_id, "QF match {$qf->id} team_b_id was wiped");
+        }
+
+        // Winners should have propagated into the SF matches.
+        foreach ($pool->matches()->where('round', 'SF')->get() as $sf) {
+            $this->assertNotNull($sf->fresh()->team_a_id, "SF match {$sf->id} team_a_id was not propagated");
+        }
+
+        // Results page should be accessible (not 404).
+        $this->actingAs($manager)
+            ->get(route('pools.results.edit', $pool))
+            ->assertOk();
+    }
+
+    public function test_sf_start_pool_results_do_not_wipe_seeded_teams(): void
+    {
+        $manager = User::factory()->create();
+        $this->actingAs($manager)->post(route('pools.store'), ['name' => 'SF Pool', 'method' => 'full', 'start_round' => 'SF']);
+        $pool = Pool::first();
+
+        $matchups = [
+            ['a' => 'Brazil', 'b' => 'France'],
+            ['a' => 'Germany', 'b' => 'Argentina'],
+        ];
+        $this->actingAs($manager)->post(route('pools.bracket.store', $pool), ['matchups' => $matchups]);
+        $pool->update(['deadline_utc' => now()->addDays(2), 'status' => 'open']);
+        $pool = $pool->fresh();
+
+        // Record SF results.
+        $this->enterRound($manager, $pool, 'SF');
+
+        // SF teams must still be seeded after propagation.
+        foreach ($pool->matches()->where('round', 'SF')->get() as $sf) {
+            $this->assertNotNull($sf->fresh()->team_a_id, "SF team_a_id was wiped");
+            $this->assertNotNull($sf->fresh()->team_b_id, "SF team_b_id was wiped");
+        }
+
+        // FINAL and THIRD should now have participants.
+        $final = $pool->matches()->where('round', 'FINAL')->first()->fresh();
+        $third = $pool->matches()->where('round', 'THIRD')->first()->fresh();
+        $this->assertNotNull($final->team_a_id);
+        $this->assertNotNull($final->team_b_id);
+        $this->assertNotNull($third->team_a_id);
+        $this->assertNotNull($third->team_b_id);
+    }
 }
