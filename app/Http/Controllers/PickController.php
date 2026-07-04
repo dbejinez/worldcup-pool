@@ -29,7 +29,7 @@ class PickController extends Controller
 
         $membership = $pool->memberships()->where('user_id', $request->user()->id)->firstOrFail();
 
-        abort_unless($pool->teams()->count() === 32, 404, 'This pool has no bracket yet.');
+        abort_unless($pool->teams()->exists(), 404, 'This pool has no bracket yet.');
 
         if ($pool->isIncremental()) {
             return $this->editIncremental($request, $pool, $membership);
@@ -213,7 +213,7 @@ class PickController extends Controller
                 : array_values(array_filter(Pool::ROUND_SEQUENCE, fn ($r) => $pool->roundRevealed($r)));
         } else {
             abort_unless($isSelf || $isManager || $pool->picksRevealed(), 403, "This player's picks are hidden until the deadline.");
-            $visibleRounds = Pool::ROUND_SEQUENCE;
+            $visibleRounds = $pool->roundsFromStart();
         }
 
         $showFinalScore = $isSelf || $isManager || in_array('FINAL', $visibleRounds, true);

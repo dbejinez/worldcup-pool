@@ -37,7 +37,8 @@ class PickImportController extends Controller
     public function showImport(Pool $pool): View
     {
         Gate::authorize('manage', $pool);
-        abort_unless($pool->teams()->count() === 32, 404, 'This pool has no bracket yet.');
+        abort_unless($pool->teams()->exists(), 404, 'This pool has no bracket yet.');
+        abort_unless(($pool->start_round ?? 'R32') === 'R32', 404, 'Bulk import is only available for Round of 32 start pools.');
 
         return view('pools.picks.import', compact('pool'));
     }
@@ -48,7 +49,8 @@ class PickImportController extends Controller
     public function template(Pool $pool): StreamedResponse
     {
         Gate::authorize('manage', $pool);
-        abort_unless($pool->teams()->count() === 32, 404, 'This pool has no bracket yet.');
+        abort_unless($pool->teams()->exists(), 404, 'This pool has no bracket yet.');
+        abort_unless(($pool->start_round ?? 'R32') === 'R32', 404, 'Bulk import is only available for Round of 32 start pools.');
 
         $teams = $pool->teams()->pluck('name', 'id');
 
@@ -142,7 +144,8 @@ class PickImportController extends Controller
     public function import(Request $request, Pool $pool): RedirectResponse
     {
         Gate::authorize('manage', $pool);
-        abort_unless($pool->teams()->count() === 32, 404);
+        abort_unless($pool->teams()->exists(), 404, 'This pool has no bracket yet.');
+        abort_unless(($pool->start_round ?? 'R32') === 'R32', 404, 'Bulk import is only available for Round of 32 start pools.');
 
         $request->validate(['file' => ['required', 'file', 'max:2048']]);
 

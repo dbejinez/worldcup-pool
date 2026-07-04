@@ -110,18 +110,22 @@ class ResultService
             foreach ($matches->where('round', $round) as $m) {
                 foreach (['A', 'B'] as $slot) {
                     $src = $sources[$m->id][$slot] ?? null;
-                    $team = null;
 
-                    if ($src) {
-                        $child = $matches[$src['child']];
-                        if ($src['type'] === 'winner') {
-                            $team = $child->actual_winner_team_id;
-                        } elseif ($child->actual_winner_team_id !== null) {
-                            // loser = the participant who isn't the winner
-                            $team = $child->actual_winner_team_id === $child->team_a_id
-                                ? $child->team_b_id
-                                : $child->team_a_id;
-                        }
+                    // No feeder means this slot belongs to the starting round —
+                    // its team was seeded by the manager and must not be overwritten.
+                    if (! $src) {
+                        continue;
+                    }
+
+                    $team = null;
+                    $child = $matches[$src['child']];
+                    if ($src['type'] === 'winner') {
+                        $team = $child->actual_winner_team_id;
+                    } elseif ($child->actual_winner_team_id !== null) {
+                        // loser = the participant who isn't the winner
+                        $team = $child->actual_winner_team_id === $child->team_a_id
+                            ? $child->team_b_id
+                            : $child->team_a_id;
                     }
 
                     $column = $slot === 'A' ? 'team_a_id' : 'team_b_id';

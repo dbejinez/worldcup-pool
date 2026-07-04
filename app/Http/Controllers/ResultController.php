@@ -18,7 +18,7 @@ class ResultController extends Controller
     {
         Gate::authorize('manage', $pool);
 
-        abort_unless($pool->teams()->count() === 32, 404, 'This pool has no bracket yet.');
+        abort_unless($pool->teams()->exists(), 404, 'This pool has no bracket yet.');
 
         $matches = $pool->matches()
             ->with(['teamA', 'teamB', 'actualWinner'])
@@ -26,7 +26,7 @@ class ResultController extends Controller
             ->get()
             ->groupBy('round');
 
-        $roundOrder = ['R32', 'R16', 'QF', 'SF', 'THIRD', 'FINAL'];
+        $roundOrder = $pool->roundsFromStart();
         $final = $pool->matches()->where('round', 'FINAL')->first();
 
         return view('pools.results.edit', compact('pool', 'matches', 'final', 'roundOrder'));
