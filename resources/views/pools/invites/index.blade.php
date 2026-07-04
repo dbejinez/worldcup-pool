@@ -15,8 +15,10 @@
             @endif
 
             {{-- Shareable join link --}}
-            @php($joinUrl = route('pool.join', $pool->join_token))
-            @php($waText = urlencode("Join my World Cup pool "{$pool->name}" — click to sign up and make your picks: {$joinUrl}"))
+            @php
+                $joinUrl = route('pool.join', $pool->join_token);
+                $waText = urlencode("Join my World Cup pool \"{$pool->name}\" \xe2\x80\x94 click to sign up and make your picks: {$joinUrl}");
+            @endphp
             <div class="bg-white shadow-sm sm:rounded-lg p-6" x-data="{ copied: false }">
                 <h3 class="font-semibold text-gray-800 mb-1">Share link (no email needed)</h3>
                 <p class="text-sm text-gray-500 mb-3">

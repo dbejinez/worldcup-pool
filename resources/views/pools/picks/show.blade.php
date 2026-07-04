@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ $player->name }}'s Picks — {{ $pool->name }}
+                {{ $isSelf ?? false ? 'My Picks' : $player->name . "'s Picks" }} — {{ $pool->name }}
             </h2>
             <a href="{{ route('pools.standings', $pool) }}" class="text-sm text-gray-600 underline">Back to standings</a>
         </div>

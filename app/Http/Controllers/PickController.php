@@ -35,36 +35,49 @@ class PickController extends Controller
             return $this->editIncremental($request, $pool, $membership);
         }
 
-        $matches = $pool->matches()->get();
-        $resolver = new PickResolver($matches);
-
-        $teams = $pool->teams()->pluck('name', 'id');
-
         $picks = $pool->picks()
             ->where('user_id', $request->user()->id)
             ->pluck('predicted_winner_team_id', 'bracket_match_id');
 
         $canEdit = $pool->picksOpen();
-        $closedReason = null;
+
+        // When picks are closed/locked/complete, render the proper read-only view.
+        // The Alpine cascade only works when picks are available to drive it; the
+        // server-rendered show view handles the no-picks and wrong-prediction cases.
         if (! $canEdit) {
-            $closedReason = match ($pool->status) {
-                'setup' => 'This pool is not open for picks yet.',
-                'locked' => 'The manager has closed picks — no more changes allowed.',
-                'complete' => 'The tournament is complete — picks are final.',
-                default => 'Picks are closed.',
-            };
+            $matches = $pool->matches()
+                ->with(['teamA', 'teamB', 'actualWinner'])
+                ->orderBy('position')
+                ->get()
+                ->groupBy('round');
+
+            return view('pools.picks.show', [
+                'pool' => $pool,
+                'player' => $request->user(),
+                'matches' => $matches,
+                'picks' => $picks,
+                'teams' => $pool->teams()->pluck('name', 'id'),
+                'teamCodes' => $pool->teams()->pluck('country_code', 'id'),
+                'membership' => $membership,
+                'roundOrder' => $pool->roundsFromStart(),
+                'showFinalScore' => true,
+                'isSelf' => true,
+            ]);
         }
+
+        $matches = $pool->matches()->get();
+        $resolver = new PickResolver($matches);
 
         return view('pools.picks.edit', [
             'pool' => $pool,
             'matchesData' => $resolver->frontendMatches(),
-            'teams' => $teams,
+            'teams' => $pool->teams()->pluck('name', 'id'),
             'teamCodes' => $pool->teams()->pluck('country_code', 'id'),
             'existingPicks' => $picks,
             'finalScoreA' => $membership->final_score_a,
             'finalScoreB' => $membership->final_score_b,
-            'canEdit' => $canEdit,
-            'closedReason' => $closedReason,
+            'canEdit' => true,
+            'closedReason' => null,
             'roundsFromStart' => $pool->roundsFromStart(),
         ]);
     }

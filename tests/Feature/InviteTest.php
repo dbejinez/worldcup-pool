@@ -19,6 +19,49 @@ class InviteTest extends TestCase
         return Pool::first();
     }
 
+    public function test_invites_page_renders_without_error(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->createPoolAsManager($manager);
+
+        $this->actingAs($manager)
+            ->get(route('pools.invites.index', $pool))
+            ->assertOk()
+            ->assertSee('Share link')
+            ->assertSee('Add players');
+    }
+
+    public function test_invites_page_with_existing_invites_renders(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->createPoolAsManager($manager);
+
+        // Create an invite — the page must render the invite row (including the
+        // join URL and WhatsApp link) without a PHP parse error.
+        $this->actingAs($manager)->post(route('pools.invites.store', $pool), [
+            'emails' => "alice@example.com",
+        ]);
+
+        $this->actingAs($manager)
+            ->get(route('pools.invites.index', $pool))
+            ->assertOk()
+            ->assertSee('alice@example.com')
+            ->assertSee('pending');
+    }
+
+    public function test_player_cannot_view_invites_page(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->createPoolAsManager($manager);
+
+        $player = User::factory()->create();
+        $pool->memberships()->create(['user_id' => $player->id, 'role' => 'player', 'joined_at' => now()]);
+
+        $this->actingAs($player)
+            ->get(route('pools.invites.index', $pool))
+            ->assertForbidden();
+    }
+
     public function test_manager_can_create_invites(): void
     {
         $manager = User::factory()->create();
