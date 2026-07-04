@@ -20,6 +20,27 @@
                 roundsFromStart: @js($roundsFromStart)
              })">
 
+            {{-- How-to strip --}}
+            <div class="bg-white shadow-sm sm:rounded-lg px-6 py-4">
+                <div class="grid grid-cols-3 divide-x divide-gray-100 text-center text-sm">
+                    <div class="px-4 py-2">
+                        <div class="text-2xl mb-1">1️⃣</div>
+                        <div class="font-semibold text-gray-800">Click a team</div>
+                        <div class="text-gray-500 text-xs mt-0.5">to pick the winner of each match</div>
+                    </div>
+                    <div class="px-4 py-2">
+                        <div class="text-2xl mb-1">2️⃣</div>
+                        <div class="font-semibold text-gray-800">Rounds unlock as you go</div>
+                        <div class="text-gray-500 text-xs mt-0.5">Quarterfinals appear after Round of 16, Semifinals after Quarterfinals, and so on.</div>
+                    </div>
+                    <div class="px-4 py-2">
+                        <div class="text-2xl mb-1">3️⃣</div>
+                        <div class="font-semibold text-gray-800">Save your bracket</div>
+                        <div class="text-gray-500 text-xs mt-0.5">Enter the Final score, then hit Save.</div>
+                    </div>
+                </div>
+            </div>
+
             @if ($errors->any())
                 <div class="px-4 py-3 bg-red-100 text-red-800 rounded-md text-sm">
                     {{ $errors->first() }}
@@ -46,29 +67,46 @@
                         <div class="bg-white shadow-sm sm:rounded-lg p-6">
                             <h3 class="font-semibold text-gray-800 mb-4" x-text="roundLabel(round)"></h3>
 
-                            <div class="space-y-3">
+                            <div class="divide-y divide-gray-100">
                                 <template x-for="m in matchesInRound(round)" :key="m.id">
-                                    <div>
+                                    <div class="py-3">
                                         <template x-if="participants(m.id)[0] && participants(m.id)[1]">
-                                            <div class="flex items-center gap-2">
-                                                <template x-for="slot in [0, 1]" :key="slot">
-                                                    <button type="button"
-                                                            @click="choose(m.id, participants(m.id)[slot])"
-                                                            :disabled="!canEdit"
-                                                            :class="picks[m.id] === participants(m.id)[slot]
-                                                                ? 'bg-indigo-600 text-white border-indigo-600'
-                                                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
-                                                            class="flex-1 text-sm border rounded-md px-3 py-2 text-left transition disabled:opacity-60 disabled:cursor-not-allowed">
-                                                        <span class="fi" x-show="flagCode(participants(m.id)[slot])"
-                                                              :class="flagCode(participants(m.id)[slot]) ? 'fi-' + flagCode(participants(m.id)[slot]) : ''"
-                                                              style="display:inline-block;width:1.3em;height:0.95em;border-radius:2px;background-size:cover;background-position:center;vertical-align:-1px;margin-right:0.45em;"></span>
-                                                        <span x-text="teamName(participants(m.id)[slot])"></span>
-                                                    </button>
-                                                </template>
+                                            <div class="flex items-center gap-2 text-sm">
+                                                <span class="text-gray-400 w-6 shrink-0 text-right" x-text="m.position + '.'"></span>
+                                                {{-- Team A --}}
+                                                <button type="button"
+                                                        @click="choose(m.id, participants(m.id)[0])"
+                                                        :disabled="!canEdit"
+                                                        :class="picks[m.id] === participants(m.id)[0]
+                                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
+                                                        class="flex-1 border rounded-md px-3 py-2 text-left transition disabled:opacity-60 disabled:cursor-not-allowed">
+                                                    <span class="fi" x-show="flagCode(participants(m.id)[0])"
+                                                          :class="'fi-' + flagCode(participants(m.id)[0])"
+                                                          style="display:inline-block;width:1.3em;height:0.95em;border-radius:2px;background-size:cover;background-position:center;vertical-align:-1px;margin-right:0.45em;"></span>
+                                                    <span x-text="teamName(participants(m.id)[0])"></span>
+                                                </button>
+                                                <span class="text-gray-400 text-xs shrink-0">vs</span>
+                                                {{-- Team B --}}
+                                                <button type="button"
+                                                        @click="choose(m.id, participants(m.id)[1])"
+                                                        :disabled="!canEdit"
+                                                        :class="picks[m.id] === participants(m.id)[1]
+                                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
+                                                        class="flex-1 border rounded-md px-3 py-2 text-left transition disabled:opacity-60 disabled:cursor-not-allowed">
+                                                    <span class="fi" x-show="flagCode(participants(m.id)[1])"
+                                                          :class="'fi-' + flagCode(participants(m.id)[1])"
+                                                          style="display:inline-block;width:1.3em;height:0.95em;border-radius:2px;background-size:cover;background-position:center;vertical-align:-1px;margin-right:0.45em;"></span>
+                                                    <span x-text="teamName(participants(m.id)[1])"></span>
+                                                </button>
                                             </div>
                                         </template>
                                         <template x-if="!(participants(m.id)[0] && participants(m.id)[1])">
-                                            <p class="text-sm text-gray-400 italic">Make your earlier-round picks first.</p>
+                                            <div class="flex items-center gap-2 text-sm">
+                                                <span class="text-gray-400 w-6 shrink-0 text-right" x-text="m.position + '.'"></span>
+                                                <p class="text-gray-400 italic">⬆ Pick all matches above to unlock these teams.</p>
+                                            </div>
                                         </template>
                                     </div>
                                 </template>
@@ -78,8 +116,8 @@
 
                     {{-- Final score (tie-breaker) --}}
                     <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                        <h3 class="font-semibold text-gray-800 mb-1">Tie-breaker — predicted Final score</h3>
-                        <p class="text-sm text-gray-600 mb-3">Predict how many goals each finalist scores.</p>
+                        <h3 class="font-semibold text-gray-800 mb-1">🏆 Tie-breaker — predicted Final score</h3>
+                        <p class="text-sm text-gray-600 mb-3">Predict the exact score. Used to break ties in standings — the winner must score more goals than the other team (no draws).</p>
 
                         {{-- always submit the two score fields --}}
                         <input type="hidden" name="final_score_a" :value="finalScoreA ?? ''">
