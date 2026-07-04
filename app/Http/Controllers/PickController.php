@@ -198,7 +198,7 @@ class PickController extends Controller
             $membership->update($update);
         });
 
-        return back()->with('status', __($round . ' picks saved.'));
+        return back()->with('status', __(':round picks saved.', ['round' => __(self::ROUND_LABELS[$round])]));
     }
 
     /**

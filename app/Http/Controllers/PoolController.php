@@ -253,7 +253,7 @@ class PoolController extends Controller
 
         return redirect()
             ->route('pools.index')
-            ->with('status', "Pool \"{$name}\" was deleted.");
+            ->with('status', __('Pool ":name" was deleted.', ['name' => $name]));
     }
 
     /**

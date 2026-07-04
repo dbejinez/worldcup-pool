@@ -221,7 +221,7 @@ class PickImportController extends Controller
 
             $teamId = $teamMap[mb_strtolower($winnerName)] ?? null;
             if (! $teamId) {
-                $errors[] = "Unknown team \"{$winnerName}\".";
+                $errors[] = __('Unknown team ":team".', ['team' => $winnerName]);
 
                 continue;
             }
@@ -230,7 +230,7 @@ class PickImportController extends Controller
 
         // Validate.
         if (! $email) {
-            $errors[] = 'Missing the "Player email" value.';
+            $errors[] = __('Missing the "Player email" value.');
         }
 
         $resolver = new PickResolver($pool->matches);
@@ -249,7 +249,7 @@ class PickImportController extends Controller
             $user = User::where('email', mb_strtolower($email))->first();
             $member = $user ? $pool->memberships()->where('user_id', $user->id)->first() : null;
             if (! $member) {
-                $errors[] = "\"{$email}\" is not a member of this pool — invite them first.";
+                $errors[] = __('":email" is not a member of this pool — invite them first.', ['email' => $email]);
             }
         }
 
