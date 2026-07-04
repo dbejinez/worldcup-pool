@@ -7,7 +7,7 @@
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
                         <x-application-logo class="block h-8 w-auto fill-current text-white" />
-                        <span class="font-display font-semibold text-lg tracking-wide text-white">World Cup Pool</span>
+                        <span class="font-display font-semibold text-lg tracking-wide text-white">{{ __('World Cup Pool') }}</span>
                     </a>
                 </div>
 
@@ -31,8 +31,30 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <!-- Settings Dropdown + Language Switcher -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
+                {{-- Language switcher --}}
+                <div class="flex items-center gap-1">
+                    <form method="POST" action="{{ route('locale.switch', 'en') }}">
+                        @csrf
+                        <button type="submit"
+                                class="flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition
+                                       {{ app()->getLocale() === 'en' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10' }}">
+                            <span class="fi fi-us" style="width:1.1em;height:0.85em;display:inline-block;border-radius:2px;background-size:cover;background-position:center;"></span>
+                            EN
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('locale.switch', 'es') }}">
+                        @csrf
+                        <button type="submit"
+                                class="flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition
+                                       {{ app()->getLocale() === 'es' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10' }}">
+                            <span class="fi fi-mx" style="width:1.1em;height:0.85em;display:inline-block;border-radius:2px;background-size:cover;background-position:center;"></span>
+                            ES
+                        </button>
+                    </form>
+                </div>
+
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-200 bg-transparent hover:text-white focus:outline-none transition ease-in-out duration-150">
@@ -79,6 +101,28 @@
 
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+        {{-- Language switcher (mobile) --}}
+        <div class="px-4 pt-3 pb-1 flex items-center gap-2">
+            <form method="POST" action="{{ route('locale.switch', 'en') }}">
+                @csrf
+                <button type="submit"
+                        class="flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition
+                               {{ app()->getLocale() === 'en' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10' }}">
+                    <span class="fi fi-us" style="width:1.1em;height:0.85em;display:inline-block;border-radius:2px;background-size:cover;background-position:center;"></span>
+                    EN
+                </button>
+            </form>
+            <form method="POST" action="{{ route('locale.switch', 'es') }}">
+                @csrf
+                <button type="submit"
+                        class="flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition
+                               {{ app()->getLocale() === 'es' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10' }}">
+                    <span class="fi fi-mx" style="width:1.1em;height:0.85em;display:inline-block;border-radius:2px;background-size:cover;background-position:center;"></span>
+                    ES
+                </button>
+            </form>
+        </div>
+
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}

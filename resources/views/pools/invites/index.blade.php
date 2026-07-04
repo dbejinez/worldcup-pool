@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $pool->name }} — Invite Players
+            {{ $pool->name }} — {{ __('Invite Players') }}
         </h2>
     </x-slot>
 
@@ -20,9 +20,9 @@
                 $waText = urlencode("Join my World Cup pool \"{$pool->name}\" \xe2\x80\x94 click to sign up and make your picks: {$joinUrl}");
             @endphp
             <div class="bg-white shadow-sm sm:rounded-lg p-6" x-data="{ copied: false }">
-                <h3 class="font-semibold text-gray-800 mb-1">Share link (no email needed)</h3>
+                <h3 class="font-semibold text-gray-800 mb-1">{{ __('Share link (no email needed)') }}</h3>
                 <p class="text-sm text-gray-500 mb-3">
-                    Anyone with this link can register and join the pool. Share it on WhatsApp or anywhere else.
+                    {{ __('Anyone with this link can register and join the pool. Share it on WhatsApp or anywhere else.') }}
                 </p>
                 <div class="flex flex-wrap items-center gap-2">
                     <input type="text" readonly value="{{ $joinUrl }}"
@@ -30,28 +30,28 @@
                     <button type="button"
                             @click="navigator.clipboard.writeText(@js($joinUrl)); copied = true; setTimeout(() => copied = false, 1500)"
                             class="px-3 py-1.5 text-xs font-semibold uppercase rounded bg-gray-700 text-white hover:bg-gray-600 whitespace-nowrap">
-                        <span x-show="!copied">Copy link</span>
-                        <span x-show="copied" x-cloak>Copied!</span>
+                        <span x-show="!copied">{{ __('Copy link') }}</span>
+                        <span x-show="copied" x-cloak>{{ __('Copied!') }}</span>
                     </button>
                     <a href="https://wa.me/?text={{ $waText }}"
                        target="_blank" rel="noopener"
                        class="px-3 py-1.5 text-xs font-semibold uppercase rounded bg-green-600 text-white hover:bg-green-500 whitespace-nowrap">
-                        WhatsApp
+                        {{ __('WhatsApp') }}
                     </a>
                 </div>
                 <form method="POST" action="{{ route('pools.join-link.regenerate', $pool) }}"
                       class="mt-3"
-                      onsubmit="return confirm('This will invalidate the current link. Continue?');">
+                      onsubmit="return confirm('{{ __('This will invalidate the current link. Continue?') }}');">
                     @csrf
-                    <button type="submit" class="text-xs text-red-500 hover:underline">Regenerate link</button>
+                    <button type="submit" class="text-xs text-red-500 hover:underline">{{ __('Regenerate link') }}</button>
                 </form>
             </div>
 
             {{-- Add emails --}}
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <h3 class="font-semibold text-gray-800 mb-2">Add players</h3>
+                <h3 class="font-semibold text-gray-800 mb-2">{{ __('Add players') }}</h3>
                 <p class="text-sm text-gray-500 mb-3">
-                    Paste player emails (one per line, or separated by commas). We'll create a unique join link for each.
+                    {{ __('Paste player emails (one per line, or separated by commas). We\'ll create a unique join link for each.') }}
                 </p>
                 <form method="POST" action="{{ route('pools.invites.store', $pool) }}" class="space-y-3">
                     @csrf
@@ -64,7 +64,7 @@
 
             {{-- Existing invites --}}
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <h3 class="font-semibold text-gray-800 mb-3">Invites ({{ $invites->count() }})</h3>
+                <h3 class="font-semibold text-gray-800 mb-3">{{ __('Invites') }} ({{ $invites->count() }})</h3>
                 @forelse ($invites as $invite)
                     @php
                         $joinUrl = route('invite.show', $invite->token);
@@ -80,7 +80,7 @@
                             <div class="font-medium text-gray-900">{{ $invite->email }}</div>
                             <span class="text-xs font-semibold uppercase px-2 py-1 rounded
                                 {{ $invite->status === 'accepted' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
-                                {{ $invite->status }}
+                                {{ $invite->status === 'accepted' ? __('accepted') : __('pending') }}
                             </span>
                         </div>
 
@@ -91,30 +91,30 @@
                                 <button type="button"
                                         @click="navigator.clipboard.writeText(@js($body)); copied = true; setTimeout(() => copied = false, 1500)"
                                         class="px-3 py-1.5 text-xs font-semibold uppercase rounded bg-gray-700 text-white hover:bg-gray-600">
-                                    <span x-show="!copied">Copy message</span>
-                                    <span x-show="copied" x-cloak>Copied!</span>
+                                    <span x-show="!copied">{{ __('Copy message') }}</span>
+                                    <span x-show="copied" x-cloak>{{ __('Copied!') }}</span>
                                 </button>
                                 <a href="{{ $mailto }}"
                                    class="px-3 py-1.5 text-xs font-semibold uppercase rounded bg-indigo-600 text-white hover:bg-indigo-500">
-                                    Send via Outlook
+                                    {{ __('Send via Outlook') }}
                                 </a>
                                 <form method="POST" action="{{ route('pools.invites.destroy', [$pool, $invite]) }}"
-                                      onsubmit="return confirm('Revoke this invite?');">
+                                      onsubmit="return confirm('{{ __('Revoke this invite?') }}');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="px-3 py-1.5 text-xs font-semibold uppercase rounded border border-red-300 text-red-600 hover:bg-red-50">
-                                        Revoke
+                                        {{ __('Revoke') }}
                                     </button>
                                 </form>
                             </div>
                         @endif
                     </div>
                 @empty
-                    <p class="text-sm text-gray-500">No invites yet.</p>
+                    <p class="text-sm text-gray-500">{{ __('No invites yet.') }}</p>
                 @endforelse
             </div>
 
-            <a href="{{ route('pools.show', $pool) }}" class="text-sm text-gray-600 underline">Back to pool</a>
+            <a href="{{ route('pools.show', $pool) }}" class="text-sm text-gray-600 underline">{{ __('Back to pool') }}</a>
         </div>
     </div>
 </x-app-layout>

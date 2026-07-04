@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $pool->name }} — My Picks (Incremental)
+            {{ $pool->name }} — {{ __('My Picks') }}
         </h2>
     </x-slot>
 
@@ -15,7 +15,7 @@
             @endif
 
             <div class="px-4 py-3 bg-blue-50 text-blue-800 rounded-md text-sm">
-                You pick one round at a time. A new round opens after the manager enters the previous round's results.
+                {{ __('You pick one round at a time. A new round opens after the manager enters the previous round\'s results.') }}
             </div>
 
             @foreach (\App\Models\Pool::ROUND_SEQUENCE as $round)
@@ -24,13 +24,13 @@
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-semibold text-gray-800">{{ $r['label'] }}</h3>
                         @if ($r['complete'])
-                            <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">finished</span>
+                            <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{{ __('finished') }}</span>
                         @elseif ($r['locked'])
-                            <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">locked</span>
+                            <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">{{ __('locked') }}</span>
                         @elseif ($r['open'])
-                            <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-green-50 text-green-700">open</span>
+                            <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-green-50 text-green-700">{{ __('open') }}</span>
                         @else
-                            <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">upcoming</span>
+                            <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">{{ __('upcoming') }}</span>
                         @endif
                     </div>
 
@@ -63,7 +63,7 @@
                                 @php($f = $r['matches']->first())
                                 <div class="pt-2">
                                     <div class="flex items-center gap-2 text-sm">
-                                        <span class="text-gray-600">Final score (tie-breaker):</span>
+                                        <span class="text-gray-600">{{ __('Final score (tie-breaker):') }}</span>
                                         <span class="font-medium"><x-flag :code="$f->teamA?->country_code" />{{ $f->teamA?->name }}</span>
                                         <input type="number" name="final_score_a" min="0" max="99"
                                                value="{{ old('final_score_a', $finalScoreA) }}"
@@ -89,10 +89,10 @@
                                 @php($correct = $decided && $picked === $m->actual_winner_team_id)
                                 <li class="flex flex-wrap items-center gap-2 py-1">
                                     <span class="text-gray-400 w-6 text-right">{{ $m->position }}.</span>
-                                    <span class="text-gray-600"><x-flag :code="$m->teamA?->country_code" />{{ $m->teamA?->name }} vs <x-flag :code="$m->teamB?->country_code" />{{ $m->teamB?->name }}</span>
+                                    <span class="text-gray-600"><x-flag :code="$m->teamA?->country_code" />{{ $m->teamA?->name }} {{ __('vs') }} <x-flag :code="$m->teamB?->country_code" />{{ $m->teamB?->name }}</span>
                                     <span class="text-gray-300">·</span>
                                     <span class="font-medium {{ $decided ? ($correct ? 'text-green-700' : 'text-red-600') : 'text-gray-800' }}">
-                                        @if ($picked)<x-flag :code="$teamCodes[$picked] ?? null" />{{ $teams[$picked] ?? '—' }}@else no pick @endif
+                                        @if ($picked)<x-flag :code="$teamCodes[$picked] ?? null" />{{ $teams[$picked] ?? '—' }}@else {{ __('no pick') }} @endif
                                     </span>
                                     @if ($decided)
                                         {!! $correct ? '<span class="text-green-600">✓</span>' : '<span class="text-red-500">✗</span>' !!}
@@ -104,23 +104,23 @@
                         @if ($round === 'FINAL' && $finalScoreA !== null && $finalScoreB !== null)
                             @php($f = $r['matches']->first())
                             <p class="mt-2 text-sm text-gray-600">
-                                Your predicted Final score:
+                                {{ __('Your predicted Final score:') }}
                                 <span class="font-medium"><x-flag :code="$f->teamA?->country_code" />{{ $f->teamA?->name }} {{ $finalScoreA }} – {{ $finalScoreB }} <x-flag :code="$f->teamB?->country_code" />{{ $f->teamB?->name }}</span>
                             </p>
                         @endif
                     @else
                         <p class="text-sm text-gray-400 italic">
                             @if ($round === 'R32')
-                                Opens when the manager opens the pool for picks.
+                                {{ __('Opens when the manager opens the pool for picks.') }}
                             @else
-                                Opens after the {{ $labels[$feeders[$round] ?? ''] ?? 'previous round' }} results are in.
+                                {{ __('Opens after the :round results are in.', ['round' => $labels[$feeders[$round] ?? ''] ?? __('previous round')]) }}
                             @endif
                         </p>
                     @endif
                 </div>
             @endforeach
 
-            <a href="{{ route('pools.show', $pool) }}" class="text-sm text-gray-600 underline">Back to pool</a>
+            <a href="{{ route('pools.show', $pool) }}" class="text-sm text-gray-600 underline">{{ __('Back to pool') }}</a>
         </div>
     </div>
 </x-app-layout>

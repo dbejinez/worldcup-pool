@@ -58,7 +58,7 @@ class ResultController extends Controller
                 : (($winnerId === $final->team_b_id) ? $b > $a : false);
             if (! $scoreOk) {
                 return back()->withErrors([
-                    'final_score' => 'The Final score must match the winner: the winning team needs more goals than the other (no ties).',
+                    'final_score' => __('The Final score must match the winner: the winning team needs more goals than the other (no ties).'),
                 ]);
             }
         }
@@ -73,6 +73,6 @@ class ResultController extends Controller
 
         return redirect()
             ->route('pools.results.edit', $pool)
-            ->with('status', 'Results saved and standings updated.');
+            ->with('status', __('Results saved and standings updated.'));
     }
 }

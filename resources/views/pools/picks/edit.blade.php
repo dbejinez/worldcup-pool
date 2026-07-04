@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $pool->name }} — My Picks
+            {{ $pool->name }} — {{ __('My Picks') }}
         </h2>
     </x-slot>
 
@@ -28,7 +28,7 @@
 
             @unless ($canEdit)
                 <div class="px-4 py-3 bg-amber-100 text-amber-800 rounded-md text-sm">
-                    {{ $closedReason }} You can view your picks but not change them.
+                    {{ $closedReason }} {{ __('You can view your picks but not change them.') }}
                 </div>
             @endunless
 
@@ -68,7 +68,7 @@
                                             </div>
                                         </template>
                                         <template x-if="!(participants(m.id)[0] && participants(m.id)[1])">
-                                            <p class="text-sm text-gray-400 italic">Make your earlier-round picks first.</p>
+                                            <p class="text-sm text-gray-400 italic">{{ __('⬆ Pick all matches above to unlock these teams.') }}</p>
                                         </template>
                                     </div>
                                 </template>
@@ -78,8 +78,8 @@
 
                     {{-- Final score (tie-breaker) --}}
                     <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                        <h3 class="font-semibold text-gray-800 mb-1">Tie-breaker — predicted Final score</h3>
-                        <p class="text-sm text-gray-600 mb-3">Predict how many goals each finalist scores.</p>
+                        <h3 class="font-semibold text-gray-800 mb-1">{{ __('🏆 Tie-breaker — predicted Final score') }}</h3>
+                        <p class="text-sm text-gray-600 mb-3">{{ __('Predict the exact score. Used to break ties in standings — the winner must score more goals than the other team (no draws).') }}</p>
 
                         {{-- always submit the two score fields --}}
                         <input type="hidden" name="final_score_a" :value="finalScoreA ?? ''">
@@ -108,10 +108,10 @@
                         </template>
                         <p x-show="finalReady() && finalScoreFilled() && !finalScoreValid()" x-cloak
                            class="mt-2 text-sm text-red-600">
-                            Your champion must score more than the other finalist — no ties.
+                            {{ __('Your champion must score more than the other finalist — no ties.') }}
                         </p>
                         <template x-if="!finalReady()">
-                            <p class="text-sm text-gray-400 italic">Pick both finalists first, then enter the score.</p>
+                            <p class="text-sm text-gray-400 italic">{{ __('Pick both finalists first, then enter the score.') }}</p>
                         </template>
                     </div>
 
@@ -119,12 +119,12 @@
                     <div class="flex items-center gap-4">
                         <button type="submit" :disabled="!canEdit || !isComplete()"
                                 class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded-md font-semibold text-xs uppercase tracking-widest hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Save my picks
+                            {{ __('Save my picks') }}
                         </button>
                         <span class="text-sm text-gray-500">
                             <span x-text="completedCount()"></span> / <span x-text="matches.length"></span> matches picked
                         </span>
-                        <a href="{{ route('pools.show', $pool) }}" class="text-sm text-gray-600 underline">Back to pool</a>
+                        <a href="{{ route('pools.show', $pool) }}" class="text-sm text-gray-600 underline">{{ __('Back to pool') }}</a>
                     </div>
                 </div>
             </form>

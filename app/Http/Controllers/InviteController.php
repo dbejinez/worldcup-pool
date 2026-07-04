@@ -47,7 +47,7 @@ class InviteController extends Controller
             ->values();
 
         if ($candidates->isEmpty()) {
-            return back()->with('error', 'No valid email addresses found.');
+            return back()->with('error', __('No valid email addresses found.'));
         }
 
         $existingMembers = $pool->memberships()->with('user')->get()
@@ -72,7 +72,7 @@ class InviteController extends Controller
             $created++;
         }
 
-        return back()->with('status', "Created {$created} invite(s)" . ($skipped ? ", skipped {$skipped} duplicate(s)." : '.'));
+        return back()->with('status', __("Created :count invite(s)", ['count' => $created]) . ($skipped ? ", " . __("skipped :count duplicate(s).", ['count' => $skipped]) : '.'));
     }
 
     /**
@@ -85,7 +85,7 @@ class InviteController extends Controller
 
         $invite->delete();
 
-        return back()->with('status', 'Invite revoked.');
+        return back()->with('status', __('Invite revoked.'));
     }
 
     /**
@@ -109,7 +109,7 @@ class InviteController extends Controller
             // Already in this pool → just go there (keeps their existing role).
             if ($invite->pool->memberships()->where('user_id', $user->id)->exists()) {
                 return redirect()->route('pools.show', $invite->pool)
-                    ->with('status', "You're already in this pool.");
+                    ->with('status', __("You're already in this pool."));
             }
 
             // Auto-join ONLY when the signed-in account matches the invited email.
@@ -119,7 +119,7 @@ class InviteController extends Controller
                 $this->joinAsPlayer($invite, $user);
 
                 return redirect()->route('pools.show', $invite->pool)
-                    ->with('status', "You've joined {$invite->pool->name}!");
+                    ->with('status', __("You've joined :pool!", ['pool' => $invite->pool->name]));
             }
 
             // Signed in as a different person → let them choose.
@@ -154,8 +154,8 @@ class InviteController extends Controller
         return redirect()
             ->route('pools.show', $invite->pool)
             ->with('status', $joined
-                ? "You've joined {$invite->pool->name}!"
-                : "You're already in this pool.");
+                ? __("You've joined :pool!", ['pool' => $invite->pool->name])
+                : __("You're already in this pool."));
     }
 
     /**
@@ -203,7 +203,7 @@ class InviteController extends Controller
 
             if ($pool->memberships()->where('user_id', $user->id)->exists()) {
                 return redirect()->route('pools.show', $pool)
-                    ->with('status', "You're already in {$pool->name}.");
+                    ->with('status', __("You're already in :pool.", ['pool' => $pool->name]));
             }
 
             $pool->memberships()->create([
@@ -213,7 +213,7 @@ class InviteController extends Controller
             ]);
 
             return redirect()->route('pools.show', $pool)
-                ->with('status', "You've joined {$pool->name}!");
+                ->with('status', __("You've joined :pool!", ['pool' => $pool->name]));
         }
 
         $request->session()->put('url.intended', route('pool.join', $token));
