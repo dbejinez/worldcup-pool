@@ -334,5 +334,9 @@
     "Unknown team \":team\".": "Equipo desconocido: \":team\".",
     "Missing the \"Player email\" value.": "Falta el valor de \"Correo del jugador\".",
     "\":email\" is not a member of this pool — invite them first.": "\":email\" no es miembro de esta liga — invítalo primero.",
-    "Pool \":name\" was deleted.": "La liga \":name\" fue eliminada."
+    "Pool \":name\" was deleted.": "La liga \":name\" fue eliminada.",
+    "2️⃣ Save this round": "2️⃣ Guarda esta ronda",
+    "Pick all matches in the open round and hit Save.": "Elige todos los partidos de la ronda abierta y presiona Guardar.",
+    "3️⃣ Come back each round": "3️⃣ Regresa cada ronda",
+    "Next round opens once the manager enters results.": "La siguiente ronda abre cuando el administrador ingrese los resultados."
 }
