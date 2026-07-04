@@ -150,13 +150,13 @@ class PickImportController extends Controller
         $request->validate(['file' => ['required', 'file', 'max:2048']]);
 
         if (! $pool->picksOpen()) {
-            return back()->with('error', 'The pool must be open for picks to import.');
+            return back()->with('error', __('The pool must be open for picks to import.'));
         }
 
         $file = $request->file('file');
         $ext = strtolower($file->getClientOriginalExtension());
         if (! in_array($ext, ['xlsx', 'csv'], true)) {
-            return back()->withErrors(['file' => 'Upload an .xlsx or .csv file.']);
+            return back()->withErrors(['file' => __('Upload an .xlsx or .csv file.')]);
         }
 
         try {
@@ -164,7 +164,7 @@ class PickImportController extends Controller
             $reader->setReadDataOnly(true);
             $rows = $reader->load($file->getRealPath())->getSheet(0)->toArray(null, true, true, true);
         } catch (\Throwable $e) {
-            return back()->withErrors(['file' => 'Could not read the file. Make sure it matches the template.']);
+            return back()->withErrors(['file' => __('Could not read the file. Make sure it matches the template.')]);
         }
 
         $errors = [];
@@ -221,7 +221,7 @@ class PickImportController extends Controller
 
             $teamId = $teamMap[mb_strtolower($winnerName)] ?? null;
             if (! $teamId) {
-                $errors[] = "Unknown team \"{$winnerName}\".";
+                $errors[] = __('Unknown team ":team".', ['team' => $winnerName]);
 
                 continue;
             }
@@ -230,18 +230,18 @@ class PickImportController extends Controller
 
         // Validate.
         if (! $email) {
-            $errors[] = 'Missing the "Player email" value.';
+            $errors[] = __('Missing the "Player email" value.');
         }
 
         $resolver = new PickResolver($pool->matches);
         if (empty($errors) && ! $resolver->isCompleteAndConsistent($picks)) {
-            $errors[] = 'The bracket is incomplete or inconsistent — every match needs a winner drawn from earlier-round picks.';
+            $errors[] = __('The bracket is incomplete or inconsistent — every match needs a winner drawn from earlier-round picks.');
         }
 
         if (! is_numeric($champGoals) || ! is_numeric($runnerGoals)) {
-            $errors[] = 'Enter both Champion goals and Runner-up goals as numbers.';
+            $errors[] = __('Enter both Champion goals and Runner-up goals as numbers.');
         } elseif ((int) $champGoals <= (int) $runnerGoals) {
-            $errors[] = 'Champion goals must be greater than Runner-up goals (no ties).';
+            $errors[] = __('Champion goals must be greater than Runner-up goals (no ties).');
         }
 
         $member = null;
@@ -249,7 +249,7 @@ class PickImportController extends Controller
             $user = User::where('email', mb_strtolower($email))->first();
             $member = $user ? $pool->memberships()->where('user_id', $user->id)->first() : null;
             if (! $member) {
-                $errors[] = "\"{$email}\" is not a member of this pool — invite them first.";
+                $errors[] = __('":email" is not a member of this pool — invite them first.', ['email' => $email]);
             }
         }
 
@@ -280,7 +280,7 @@ class PickImportController extends Controller
             ]);
         });
 
-        return back()->with('status', "Imported picks for {$email}.");
+        return back()->with('status', __("Imported picks for :email.", ['email' => $email]));
     }
 
     /**

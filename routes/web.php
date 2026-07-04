@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BracketController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PickController;
 use App\Http\Controllers\PoolController;
 use App\Http\Controllers\ResultController;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return auth()->check() ? redirect()->route('pools.index') : redirect()->route('login');
 });
+
+Route::post('locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

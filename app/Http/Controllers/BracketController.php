@@ -49,7 +49,7 @@ class BracketController extends Controller
         Gate::authorize('manage', $pool);
 
         if ($pool->teams()->exists()) {
-            return back()->with('error', 'This pool already has teams loaded. Reset the bracket first.');
+            return back()->with('error', __('This pool already has teams loaded. Reset the bracket first.'));
         }
 
         abort_unless($pool->status === 'setup', 403, 'Teams can only be loaded while the pool is in setup.');
@@ -61,7 +61,7 @@ class BracketController extends Controller
 
         return redirect()
             ->route('pools.show', $pool)
-            ->with('status', "Bracket created — {$teamCount} teams and the {$label} onwards are set up.");
+            ->with('status', __("Bracket created — :count teams and the :label onwards are set up.", ['count' => $teamCount, 'label' => $label]));
     }
 
     /**
@@ -78,6 +78,6 @@ class BracketController extends Controller
 
         return redirect()
             ->route('pools.bracket.edit', $pool)
-            ->with('status', 'Bracket reset. You can load the teams again.');
+            ->with('status', __('Bracket reset. You can load the teams again.'));
     }
 }

@@ -78,8 +78,8 @@ class PoolController extends Controller
         return redirect()
             ->route('pools.show', $pool)
             ->with('status', $autoApprove
-                ? 'Pool created — you are its manager.'
-                : 'Pool created — it will be active once an admin approves it.');
+                ? __('Pool created — you are its manager.')
+                : __('Pool created — it will be active once an admin approves it.'));
     }
 
     /**
@@ -145,7 +145,7 @@ class PoolController extends Controller
 
         return redirect()
             ->route('pools.settings', $pool)
-            ->with('status', 'Settings saved.');
+            ->with('status', __('Settings saved.'));
     }
 
     /**
@@ -156,18 +156,18 @@ class PoolController extends Controller
         Gate::authorize('manage', $pool);
 
         if (! $pool->isApproved()) {
-            return back()->with('error', 'This pool is awaiting admin approval before it can open.');
+            return back()->with('error', __('This pool is awaiting admin approval before it can open.'));
         }
 
         if (! $pool->isReadyToOpen()) {
-            return back()->with('error', 'Load all 32 teams and set a pick deadline before opening the pool.');
+            return back()->with('error', __('Load all teams and set a pick deadline before opening the pool.'));
         }
 
         $pool->update(['status' => 'open']);
 
         return redirect()
             ->route('pools.show', $pool)
-            ->with('status', 'Pool is now open for picks!');
+            ->with('status', __('Pool is now open for picks!'));
     }
 
     /**
@@ -179,7 +179,7 @@ class PoolController extends Controller
         Gate::authorize('manage', $pool);
 
         if ($pool->isIncremental()) {
-            return back()->with('error', 'Incremental pools lock picks per round, not all at once.');
+            return back()->with('error', __('Incremental pools lock picks per round, not all at once.'));
         }
 
         abort_unless($pool->status === 'open', 403, 'Only an open pool can be closed.');
@@ -188,7 +188,7 @@ class PoolController extends Controller
 
         return redirect()
             ->route('pools.show', $pool)
-            ->with('status', 'Picks are now closed — players can no longer make changes.');
+            ->with('status', __('Picks are now closed — players can no longer make changes.'));
     }
 
     /**
@@ -204,7 +204,7 @@ class PoolController extends Controller
 
         return redirect()
             ->route('pools.show', $pool)
-            ->with('status', 'Pool reopened for picks.');
+            ->with('status', __('Pool reopened for picks.'));
     }
 
     /**
@@ -222,7 +222,7 @@ class PoolController extends Controller
             $pool->update(['locked_rounds' => array_values($locked)]);
         }
 
-        return back()->with('status', 'Round locked — those picks are now final and visible.');
+        return back()->with('status', __('Round locked — those picks are now final and visible.'));
     }
 
     /**
@@ -237,7 +237,7 @@ class PoolController extends Controller
         $locked = array_values(array_filter($pool->locked_rounds ?? [], fn ($r) => $r !== $round));
         $pool->update(['locked_rounds' => $locked]);
 
-        return back()->with('status', 'Round unlocked.');
+        return back()->with('status', __('Round unlocked.'));
     }
 
     /**
@@ -253,7 +253,7 @@ class PoolController extends Controller
 
         return redirect()
             ->route('pools.index')
-            ->with('status', "Pool \"{$name}\" was deleted.");
+            ->with('status', __('Pool ":name" was deleted.', ['name' => $name]));
     }
 
     /**
@@ -265,7 +265,7 @@ class PoolController extends Controller
 
         $pool->update(['join_token' => Str::random(32)]);
 
-        return back()->with('status', 'Join link regenerated — the old link is now invalid.');
+        return back()->with('status', __('Join link regenerated — the old link is now invalid.'));
     }
 
     /**

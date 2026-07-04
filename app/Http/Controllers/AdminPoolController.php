@@ -33,7 +33,7 @@ class AdminPoolController extends Controller
             'approved_by' => $request->user()->id,
         ]);
 
-        return back()->with('status', "Approved \"{$pool->name}\".");
+        return back()->with('status', __("Approved \":name\".", ['name' => $pool->name]));
     }
 
     public function reject(Request $request, Pool $pool): RedirectResponse
@@ -46,6 +46,6 @@ class AdminPoolController extends Controller
         $name = $pool->name;
         $pool->delete();
 
-        return back()->with('status', "Rejected and removed \"{$name}\".");
+        return back()->with('status', __("Rejected and removed \":name\".", ['name' => $name]));
     }
 }

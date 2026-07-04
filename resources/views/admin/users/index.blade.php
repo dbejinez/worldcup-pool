@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Admin — Users</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Admin — Users') }}</h2>
     </x-slot>
 
     <div class="py-12">
@@ -19,17 +19,17 @@
                         Temporary password for <strong>{{ $rp['name'] }}</strong> ({{ $rp['email'] }}):
                         <code class="mx-1 px-2 py-0.5 bg-white border border-blue-200 rounded font-mono">{{ $rp['password'] }}</code>
                     </div>
-                    <div class="text-blue-800">They'll be required to set a new password on next sign-in. (Shown only once.)</div>
+                    <div class="text-blue-800">{{ __("They'll be required to set a new password on next sign-in.") }} ({{ __('Shown only once.') }})</div>
                     <a href="{{ $mailto }}"
                        class="inline-flex items-center px-3 py-1.5 text-xs font-semibold uppercase rounded bg-indigo-600 text-white hover:bg-indigo-500">
-                        Send via Outlook
+                        {{ __('Send via Outlook') }}
                     </a>
                 </div>
             @endif
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 <form method="GET" action="{{ route('admin.users.index') }}" class="mb-4 flex gap-2">
-                    <input type="text" name="q" value="{{ $q }}" placeholder="Search name or email"
+                    <input type="text" name="q" value="{{ $q }}" placeholder="{{ __('Search name or email') }}"
                            class="flex-1 text-sm border-gray-300 rounded-md">
                     <x-primary-button>{{ __('Search') }}</x-primary-button>
                 </form>
@@ -37,8 +37,8 @@
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
                         <tr>
-                            <th class="text-left px-3 py-2">Name</th>
-                            <th class="text-left px-3 py-2">Email</th>
+                            <th class="text-left px-3 py-2">{{ __('Name') }}</th>
+                            <th class="text-left px-3 py-2">{{ __('Email') }}</th>
                             <th class="text-right px-3 py-2">Pools</th>
                             <th class="px-3 py-2"></th>
                         </tr>
@@ -61,12 +61,12 @@
                                     <form method="POST" action="{{ route('admin.users.reset-password', $u) }}"
                                           onsubmit="return confirm('Issue a temporary password for {{ $u->email }}? Their current password will stop working.');">
                                         @csrf
-                                        <button type="submit" class="text-xs text-indigo-600 underline">Reset password</button>
+                                        <button type="submit" class="text-xs text-indigo-600 underline">{{ __('Reset password') }}</button>
                                     </form>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="px-3 py-4 text-gray-500">No users found.</td></tr>
+                            <tr><td colspan="4" class="px-3 py-4 text-gray-500">{{ __('No users found.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

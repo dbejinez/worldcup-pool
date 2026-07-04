@@ -150,12 +150,12 @@ class PickController extends Controller
         foreach ($validated['winners'] as $matchId => $teamId) {
             $match = $byId->get((int) $matchId);
             if (! $match || ! in_array((int) $teamId, [$match->team_a_id, $match->team_b_id], true)) {
-                return back()->withErrors(['picks' => 'Each winner must be one of the two teams in that match.']);
+                return back()->withErrors(['picks' => __('Each winner must be one of the two teams in that match.')]);
             }
             $picks[(int) $matchId] = (int) $teamId;
         }
         if (count($picks) !== $roundMatches->count()) {
-            return back()->withErrors(['picks' => 'Pick a winner for every match in this round.']);
+            return back()->withErrors(['picks' => __('Pick a winner for every match in this round.')]);
         }
 
         $finalScore = null;
@@ -164,13 +164,13 @@ class PickController extends Controller
             $a = $validated['final_score_a'] ?? null;
             $b = $validated['final_score_b'] ?? null;
             if (! is_numeric($a) || ! is_numeric($b)) {
-                return back()->withErrors(['final_score' => 'Enter the Final score for both teams.']);
+                return back()->withErrors(['final_score' => __('Enter the Final score for both teams.')]);
             }
             $a = (int) $a;
             $b = (int) $b;
             $winnerOk = $picks[$final->id] === $final->team_a_id ? $a > $b : $b > $a;
             if (! $winnerOk) {
-                return back()->withErrors(['final_score' => 'The winning team must have more goals (no ties).']);
+                return back()->withErrors(['final_score' => __('The winning team must have more goals (no ties).')]);
             }
             $finalScore = [$a, $b];
         }
@@ -198,7 +198,7 @@ class PickController extends Controller
             $membership->update($update);
         });
 
-        return back()->with('status', self::ROUND_LABELS[$round] . ' picks saved.');
+        return back()->with('status', __(':round picks saved.', ['round' => __(self::ROUND_LABELS[$round])]));
     }
 
     /**
@@ -284,7 +284,7 @@ class PickController extends Controller
             $matchId = (int) $matchId;
             $teamId = (int) $teamId;
             if (! in_array($matchId, $matchIds, true) || ! in_array($teamId, $teamIds, true)) {
-                return back()->withErrors(['picks' => 'Your picks contain an unknown match or team.']);
+                return back()->withErrors(['picks' => __('Your picks contain an unknown match or team.')]);
             }
             $picks[$matchId] = $teamId;
         }
@@ -292,7 +292,7 @@ class PickController extends Controller
         $resolver = new PickResolver($pool->matches()->get());
         if (! $resolver->isCompleteAndConsistent($picks)) {
             return back()->withErrors([
-                'picks' => 'Your bracket is incomplete or inconsistent. Please pick a winner for every match.',
+                'picks' => __('Your bracket is incomplete or inconsistent. Please pick a winner for every match.'),
             ]);
         }
 
@@ -306,7 +306,7 @@ class PickController extends Controller
         $scoreOk = ($champion === $finalistA) ? $a > $b : (($champion === $finalistB) ? $b > $a : false);
         if (! $scoreOk) {
             return back()->withErrors([
-                'final_score' => 'Your Final score must match your champion: the team you picked to win needs more goals than the other (no ties).',
+                'final_score' => __('Your Final score must match your champion: the team you picked to win needs more goals than the other (no ties).'),
             ]);
         }
 
@@ -338,6 +338,6 @@ class PickController extends Controller
 
         return redirect()
             ->route('pools.show', $pool)
-            ->with('status', 'Your picks have been saved!');
+            ->with('status', __('Your picks have been saved!'));
     }
 }

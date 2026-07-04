@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $pool->name }} — Enter Results
+            {{ $pool->name }} — {{ __('Enter Results') }}
         </h2>
     </x-slot>
 
@@ -15,11 +15,13 @@
             @endif
 
             <div class="px-4 py-3 bg-blue-50 text-blue-800 rounded-md text-sm">
-                Select the actual winner of each completed match, then save that round. Later rounds fill in
-                automatically as you enter earlier results, and standings recompute every time you save.
+                {{ __('Select the actual winner of each completed match, then save that round. Later rounds fill in automatically as you enter earlier results, and standings recompute every time you save.') }}
             </div>
 
-            @php($roundLabels = ['R32' => 'Round of 32', 'R16' => 'Round of 16', 'QF' => 'Quarterfinals', 'SF' => 'Semifinals', 'THIRD' => 'Third Place Match', 'FINAL' => 'Final'])
+            @php($roundLabels = [
+                'R32' => __('Round of 32'), 'R16' => __('Round of 16'), 'QF' => __('Quarterfinals'),
+                'SF' => __('Semifinals'), 'THIRD' => __('Third Place Match'), 'FINAL' => __('Final')
+            ])
 
             @foreach ($roundOrder as $round)
                 @php($roundMatches = $matches->get($round))
@@ -30,17 +32,17 @@
                         <h3 class="font-semibold text-gray-800">{{ $roundLabels[$round] }}</h3>
                         @if ($pool->isIncremental())
                             @if ($pool->roundComplete($round))
-                                <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">results in</span>
+                                <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{{ __('results in') }}</span>
                             @elseif ($pool->roundLocked($round))
                                 <form method="POST" action="{{ route('pools.rounds.unlock', [$pool, $round]) }}">
                                     @csrf
-                                    <button type="submit" class="text-xs font-semibold uppercase px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">Unlock picks</button>
+                                    <button type="submit" class="text-xs font-semibold uppercase px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">{{ __('Unlock picks') }}</button>
                                 </form>
                             @else
                                 <form method="POST" action="{{ route('pools.rounds.lock', [$pool, $round]) }}"
                                       onsubmit="return confirm('Lock {{ $roundLabels[$round] }} picks? Players can no longer change them, and the picks become visible.');">
                                     @csrf
-                                    <button type="submit" class="text-xs font-semibold uppercase px-3 py-1 rounded bg-red-600 text-white hover:bg-red-500">Lock picks</button>
+                                    <button type="submit" class="text-xs font-semibold uppercase px-3 py-1 rounded bg-red-600 text-white hover:bg-red-500">{{ __('Lock picks') }}</button>
                                 </form>
                             @endif
                         @endif
@@ -72,7 +74,7 @@
 
                                     @if ($round === 'FINAL')
                                         <div class="mt-3 flex items-center gap-3 text-sm">
-                                            <span class="text-gray-600">Final score (tie-breaker):</span>
+                                            <span class="text-gray-600">{{ __('Final score (tie-breaker):') }}</span>
                                             <span class="font-medium"><x-flag :code="$m->teamA?->country_code" />{{ $m->teamA?->name }}</span>
                                             <input type="number" name="final_score_a" min="0" max="99"
                                                    value="{{ old('final_score_a', $m->final_actual_score_a) }}"
@@ -88,7 +90,7 @@
                                 @else
                                     <div class="flex items-center gap-3 text-sm text-gray-400">
                                         <span class="w-6">{{ $m->position }}.</span>
-                                        <em>Awaiting earlier results…</em>
+                                        <em>{{ __('Awaiting earlier results…') }}</em>
                                     </div>
                                 @endif
                             </div>
@@ -102,7 +104,7 @@
                 </div>
             @endforeach
 
-            <a href="{{ route('pools.show', $pool) }}" class="inline-block text-sm text-gray-600 underline">Back to pool</a>
+            <a href="{{ route('pools.show', $pool) }}" class="inline-block text-sm text-gray-600 underline">{{ __('Back to pool') }}</a>
         </div>
     </div>
 </x-app-layout>

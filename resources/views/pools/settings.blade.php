@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $pool->name }} — Settings
+            {{ $pool->name }} — {{ __('Settings') }}
         </h2>
     </x-slot>
 
@@ -36,8 +36,8 @@
 
                 {{-- Scoring --}}
                 <div>
-                    <h3 class="font-semibold text-gray-800 mb-1">Knockout scoring (points per correct pick)</h3>
-                    <p class="text-sm text-gray-500 mb-3">Later rounds are usually worth more.</p>
+                    <h3 class="font-semibold text-gray-800 mb-1">{{ __('Knockout scoring (points per correct pick)') }}</h3>
+                    <p class="text-sm text-gray-500 mb-3">{{ __('Later rounds are usually worth more.') }}</p>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         @foreach ([
                             'pts_r32' => 'Round of 32',
@@ -48,7 +48,7 @@
                             'pts_final' => 'Final',
                         ] as $field => $label)
                             <div>
-                                <x-input-label :for="$field" :value="$label" />
+                                <x-input-label :for="$field" :value="__($label)" />
                                 <x-text-input :id="$field" :name="$field" type="number" min="0" max="1000"
                                               class="mt-1 block w-full"
                                               :value="old($field, $s->{$field})" required />
@@ -60,12 +60,17 @@
 
                 {{-- Tie-breakers --}}
                 <div>
-                    <h3 class="font-semibold text-gray-800 mb-1">Tie-breakers</h3>
-                    <p class="text-sm text-gray-500 mb-3">Applied in order when players are tied on points. Each must be different.</p>
+                    <h3 class="font-semibold text-gray-800 mb-1">{{ __('Tie-breakers') }}</h3>
+                    <p class="text-sm text-gray-500 mb-3">{{ __('Applied in order when players are tied on points. Each must be different.') }}</p>
                     <div class="space-y-3">
                         @for ($i = 0; $i < 4; $i++)
                             <div class="flex items-center gap-3">
-                                <span class="text-sm text-gray-500 w-28">{{ ['1st','2nd','3rd','4th'][$i] }} tie-breaker</span>
+                                <span class="text-sm text-gray-500 w-28">{{ __([
+                                    '1st tie-breaker',
+                                    '2nd tie-breaker',
+                                    '3rd tie-breaker',
+                                    '4th tie-breaker',
+                                ][$i]) }}</span>
                                 <select name="tiebreakers[]" class="flex-1 text-sm border-gray-300 rounded-md" required>
                                     @foreach (\App\Models\Pool::TIEBREAKERS as $key => $label)
                                         <option value="{{ $key }}"
@@ -85,10 +90,10 @@
 
                 {{-- Deadline --}}
                 <div>
-                    <h3 class="font-semibold text-gray-800 mb-1">Pick deadline</h3>
+                    <h3 class="font-semibold text-gray-800 mb-1">{{ __('Pick deadline') }}</h3>
                     <p class="text-sm text-gray-500 mb-3">
-                        Shown to players as the <strong>target</strong> close time, in <strong>Central Time, Mexico</strong> ({{ $pool->timezone }}).
-                        Picks don't lock automatically — you close them with the <strong>Close picks</strong> button when ready. Leave blank to set later.
+                        {{ __('Shown to players as the target close time, in Central Time, Mexico') }} ({{ $pool->timezone }}).
+                        {{ __("Picks don't lock automatically — you close them with the Close picks button when ready. Leave blank to set later.") }}
                     </p>
                     <x-text-input id="deadline_local" name="deadline_local" type="datetime-local"
                                   class="block w-full sm:w-auto"
@@ -98,7 +103,7 @@
 
                 <div class="flex items-center gap-4">
                     <x-primary-button>{{ __('Save settings') }}</x-primary-button>
-                    <a href="{{ route('pools.show', $pool) }}" class="text-sm text-gray-600 underline">Back to pool</a>
+                    <a href="{{ route('pools.show', $pool) }}" class="text-sm text-gray-600 underline">{{ __('Back to pool') }}</a>
                 </div>
             </form>
         </div>
