@@ -173,4 +173,82 @@ class InviteTest extends TestCase
 
         $this->assertDatabaseCount('pool_memberships', 0);
     }
+
+    // --- Public join link (no email) ---
+
+    public function test_pool_has_join_token_on_creation(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->createPoolAsManager($manager);
+
+        $this->assertNotNull($pool->join_token);
+        $this->assertSame(32, strlen($pool->join_token));
+    }
+
+    public function test_guest_sees_join_page_via_pool_link(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->createPoolAsManager($manager);
+        $pool->update(['approved_at' => now()]);
+
+        auth()->logout();
+        $this->get(route('pool.join', $pool->join_token))
+            ->assertOk()
+            ->assertSee('Create account');
+    }
+
+    public function test_authenticated_user_auto_joins_via_pool_link(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->createPoolAsManager($manager);
+        $pool->update(['approved_at' => now()]);
+
+        $player = User::factory()->create();
+
+        $this->actingAs($player)
+            ->get(route('pool.join', $pool->join_token))
+            ->assertRedirect(route('pools.show', $pool));
+
+        $this->assertDatabaseHas('pool_memberships', [
+            'pool_id' => $pool->id,
+            'user_id' => $player->id,
+            'role' => 'player',
+        ]);
+    }
+
+    public function test_existing_member_is_not_duplicated_via_pool_link(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->createPoolAsManager($manager);
+        $pool->update(['approved_at' => now()]);
+
+        $this->actingAs($manager)
+            ->get(route('pool.join', $pool->join_token))
+            ->assertRedirect(route('pools.show', $pool));
+
+        $this->assertSame(1, $pool->memberships()->where('user_id', $manager->id)->count());
+        $this->assertDatabaseHas('pool_memberships', ['user_id' => $manager->id, 'role' => 'manager']);
+    }
+
+    public function test_invalid_pool_link_shows_error_page(): void
+    {
+        $this->get(route('pool.join', 'invalid-token'))
+            ->assertOk()
+            ->assertSee('Link not available');
+    }
+
+    public function test_manager_can_regenerate_join_link(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->createPoolAsManager($manager);
+        $oldToken = $pool->join_token;
+
+        $this->actingAs($manager)
+            ->post(route('pools.join-link.regenerate', $pool))
+            ->assertRedirect();
+
+        $newToken = $pool->fresh()->join_token;
+        $this->assertNotEquals($oldToken, $newToken);
+        $this->get(route('pool.join', $oldToken))->assertOk()->assertSee('Link not available');
+    }
 }

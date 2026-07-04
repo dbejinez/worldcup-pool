@@ -63,7 +63,7 @@
                         <dd class="font-medium">{{ ucfirst($pool->status) }}</dd>
 
                         <dt class="text-gray-500">Teams loaded</dt>
-                        <dd class="font-medium">{{ $pool->teams->count() }} / 32</dd>
+                        <dd class="font-medium">{{ $pool->teams->count() }} / {{ $pool->startRoundTeamCount() }}</dd>
 
                         <dt class="text-gray-500">Pick deadline (target)</dt>
                         <dd class="font-medium">
@@ -90,7 +90,7 @@
             </div>
 
             {{-- Actions --}}
-            @php($hasBracket = $pool->teams->count() >= 32)
+            @php($hasBracket = $pool->teams->count() >= $pool->startRoundTeamCount())
             <div class="bg-white shadow-sm sm:rounded-lg p-6 flex flex-wrap items-center gap-3">
                 @if ($membership->isManager() && $hasBracket)
                     <a href="{{ route('pools.results.edit', $pool) }}"
@@ -128,7 +128,7 @@
                                 </button>
                             </form>
                         @else
-                            <span class="text-sm text-gray-500">Load 32 teams{{ $pool->isIncremental() ? '' : ' and set a deadline' }} to open the pool for picks.</span>
+                            <span class="text-sm text-gray-500">Load {{ $pool->startRoundTeamCount() }} teams{{ $pool->isIncremental() ? '' : ' and set a deadline' }} to open the pool for picks.</span>
                         @endif
                     @elseif ($pool->status === 'open')
                         @if ($pool->isIncremental())
@@ -197,9 +197,9 @@
                         <li class="flex items-center gap-2">
                             <span>①</span>
                             <a href="{{ route('pools.bracket.edit', $pool) }}" class="text-indigo-600 underline">
-                                Load the 32 knockout teams and Round-of-32 matchups
+                                Load the {{ $pool->startRoundTeamCount() }} teams{{ $pool->isIncremental() ? ' and Round-of-32 matchups' : '' }}
                             </a>
-                            @if ($pool->teams->count() >= 32)
+                            @if ($pool->teams->count() >= $pool->startRoundTeamCount())
                                 <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded bg-green-100 text-green-800">done</span>
                             @endif
                         </li>

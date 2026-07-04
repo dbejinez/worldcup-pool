@@ -22,12 +22,14 @@ class Pool extends Model
     protected $fillable = [
         'name',
         'method',
+        'start_round',
         'status',
         'deadline_utc',
         'timezone',
         'tiebreaker_order',
         'settings_saved_at',
         'locked_rounds',
+        'join_token',
         'created_by',
         'approved_at',
         'approved_by',
@@ -43,6 +45,14 @@ class Pool extends Model
 
     /** Knockout rounds in order, and each round's feeder (previous) round. */
     public const ROUND_SEQUENCE = ['R32', 'R16', 'QF', 'SF', 'THIRD', 'FINAL'];
+
+    /** Valid starting rounds for full-bracket pools (not THIRD — that's auto-generated). */
+    public const START_ROUNDS = ['R32', 'R16', 'QF', 'SF', 'FINAL'];
+
+    /** Number of seeded matches per starting round. */
+    public const START_ROUND_MATCH_COUNTS = [
+        'R32' => 16, 'R16' => 8, 'QF' => 4, 'SF' => 2, 'FINAL' => 1,
+    ];
 
     public const ROUND_FEEDER = [
         'R16' => 'R32',
@@ -117,14 +127,42 @@ class Pool extends Model
         return in_array($this->status, ['locked', 'complete'], true);
     }
 
+    /** Number of seeded matches for this pool's starting round. */
+    public function startRoundMatchCount(): int
+    {
+        if ($this->isIncremental()) {
+            return 16;
+        }
+
+        return self::START_ROUND_MATCH_COUNTS[$this->start_round ?? 'R32'];
+    }
+
+    /** Number of teams to load (2 per seeded match). */
+    public function startRoundTeamCount(): int
+    {
+        return $this->startRoundMatchCount() * 2;
+    }
+
     /**
-     * A pool can be opened for picks once 32 teams are loaded (full pools also
-     * require a deadline; incremental pools lock per round so a deadline is optional).
+     * The rounds that exist in this pool's bracket, in order.
+     * Slices ROUND_SEQUENCE from the starting round onwards.
+     */
+    public function roundsFromStart(): array
+    {
+        $start = $this->isIncremental() ? 'R32' : ($this->start_round ?? 'R32');
+        $idx = array_search($start, self::ROUND_SEQUENCE, true);
+
+        return array_slice(self::ROUND_SEQUENCE, $idx === false ? 0 : $idx);
+    }
+
+    /**
+     * A pool can be opened for picks once all starting-round teams are loaded
+     * (full pools also require a deadline; incremental pools lock per round).
      */
     public function isReadyToOpen(): bool
     {
         return $this->status === 'setup'
-            && $this->teams()->count() === 32
+            && $this->teams()->count() === $this->startRoundTeamCount()
             && ($this->isIncremental() || $this->deadline_utc !== null);
     }
 

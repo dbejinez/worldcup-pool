@@ -20,6 +20,7 @@ class StorePoolRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'method' => ['nullable', \Illuminate\Validation\Rule::in(['full', 'incremental'])],
+            'start_round' => ['nullable', \Illuminate\Validation\Rule::in(\App\Models\Pool::START_ROUNDS)],
         ];
     }
 }

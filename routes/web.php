@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pools/{pool}/invites', [InviteController::class, 'index'])->name('pools.invites.index');
     Route::post('/pools/{pool}/invites', [InviteController::class, 'store'])->name('pools.invites.store');
     Route::delete('/pools/{pool}/invites/{invite}', [InviteController::class, 'destroy'])->name('pools.invites.destroy');
+    Route::post('/pools/{pool}/join-link/regenerate', [PoolController::class, 'regenerateJoinLink'])->name('pools.join-link.regenerate');
 
     // Authenticated: accept an invite.
     Route::post('/join/{token}', [InviteController::class, 'accept'])->name('invite.accept');
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Public: invite landing page (works for guests; they log in / register first).
 Route::get('/join/{token}', [InviteController::class, 'show'])->name('invite.show');
+
+// Public: pool join link (no email — shareable on WhatsApp, etc.).
+Route::get('/p/{token}', [InviteController::class, 'showPool'])->name('pool.join');
 
 Route::middleware('auth')->group(function () {
     // Forced password change for manager-issued temporary passwords.

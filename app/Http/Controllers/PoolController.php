@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PoolController extends Controller
@@ -48,12 +49,15 @@ class PoolController extends Controller
         $autoApprove = (bool) $user->is_admin;
 
         $pool = DB::transaction(function () use ($request, $user, $autoApprove) {
+            $method = $request->validated('method') ?? 'full';
             $pool = Pool::create([
                 'name' => $request->validated('name'),
-                'method' => $request->validated('method') ?? 'full',
+                'method' => $method,
+                'start_round' => $method === 'full' ? ($request->validated('start_round') ?? 'R32') : 'R32',
                 'status' => 'setup',
                 'timezone' => 'America/Mexico_City',
                 'tiebreaker_order' => ['exact_score', 'final_goals_closest', 'most_correct', 'earliest_submission'],
+                'join_token' => Str::random(32),
                 'created_by' => $user->id,
                 'approved_at' => $autoApprove ? now() : null,
                 'approved_by' => $autoApprove ? $user->id : null,
@@ -250,6 +254,18 @@ class PoolController extends Controller
         return redirect()
             ->route('pools.index')
             ->with('status', "Pool \"{$name}\" was deleted.");
+    }
+
+    /**
+     * Regenerate the pool's public join link (invalidates the old one).
+     */
+    public function regenerateJoinLink(Pool $pool): RedirectResponse
+    {
+        Gate::authorize('manage', $pool);
+
+        $pool->update(['join_token' => Str::random(32)]);
+
+        return back()->with('status', 'Join link regenerated — the old link is now invalid.');
     }
 
     /**

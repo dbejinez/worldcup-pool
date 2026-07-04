@@ -12,6 +12,11 @@ use Illuminate\View\View;
 
 class BracketController extends Controller
 {
+    private const ROUND_LABELS = [
+        'R32' => 'Round of 32', 'R16' => 'Round of 16', 'QF' => 'Quarterfinals',
+        'SF' => 'Semifinals', 'THIRD' => 'Third Place Match', 'FINAL' => 'Final',
+    ];
+
     /**
      * Show the team/matchup setup form, or the loaded bracket if already built.
      */
@@ -19,17 +24,25 @@ class BracketController extends Controller
     {
         Gate::authorize('manage', $pool);
 
-        $r32 = $pool->matches()
-            ->where('round', 'R32')
+        $startRound = $pool->isIncremental() ? 'R32' : ($pool->start_round ?? 'R32');
+
+        $startMatches = $pool->matches()
+            ->where('round', $startRound)
             ->with(['teamA', 'teamB'])
             ->orderBy('position')
             ->get();
 
-        return view('pools.bracket.setup', compact('pool', 'r32'));
+        return view('pools.bracket.setup', [
+            'pool' => $pool,
+            'startMatches' => $startMatches,
+            'startRound' => $startRound,
+            'startRoundLabel' => self::ROUND_LABELS[$startRound],
+            'matchupCount' => $pool->startRoundMatchCount(),
+        ]);
     }
 
     /**
-     * Build the bracket from 16 Round-of-32 matchups.
+     * Build the bracket from the starting-round matchups.
      */
     public function store(StoreBracketRequest $request, Pool $pool, BracketBuilder $builder): RedirectResponse
     {
@@ -43,9 +56,12 @@ class BracketController extends Controller
 
         $builder->build($pool, $request->validated('matchups'));
 
+        $teamCount = $pool->startRoundTeamCount();
+        $label = self::ROUND_LABELS[$pool->start_round ?? 'R32'];
+
         return redirect()
             ->route('pools.show', $pool)
-            ->with('status', 'Bracket created — 32 teams and all knockout rounds are set up.');
+            ->with('status', "Bracket created — {$teamCount} teams and the {$label} onwards are set up.");
     }
 
     /**
@@ -57,7 +73,6 @@ class BracketController extends Controller
 
         abort_unless($pool->status === 'setup', 403, 'The bracket can only be reset during setup.');
 
-        // Cascades delete matches and picks via FKs.
         $pool->matches()->delete();
         $pool->teams()->delete();
 

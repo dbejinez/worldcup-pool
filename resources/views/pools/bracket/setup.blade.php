@@ -14,12 +14,12 @@
                 <div class="px-4 py-3 bg-red-100 text-red-800 rounded-md">{{ session('error') }}</div>
             @endif
 
-            @if ($r32->isNotEmpty())
-                {{-- Loaded: read-only list of the 16 R32 matchups --}}
+            @if ($startMatches->isNotEmpty())
+                {{-- Loaded: read-only list of the starting-round matchups --}}
                 <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-800 mb-4">Round of 32 — {{ $r32->count() }} matchups loaded</h3>
+                    <h3 class="font-semibold text-gray-800 mb-4">{{ $startRoundLabel }} — {{ $startMatches->count() }} matchups loaded</h3>
                     <ol class="grid sm:grid-cols-2 gap-2 text-sm">
-                        @foreach ($r32 as $match)
+                        @foreach ($startMatches as $match)
                             <li class="flex items-center gap-2 py-1">
                                 <span class="text-gray-400 w-6 text-right">{{ $match->position }}.</span>
                                 <span class="font-medium"><x-flag :code="$match->teamA?->country_code" />{{ $match->teamA?->name }}</span>
@@ -39,22 +39,25 @@
                     </form>
                 @endif
             @else
-                {{-- Not loaded: entry form for the 16 matchups --}}
+                {{-- Not loaded: entry form --}}
                 <div class="bg-white shadow-sm sm:rounded-lg p-6"
                      x-data="{
-                        matchups: @js(old('matchups', array_fill(0, 16, ['a' => '', 'b' => '']))),
+                        count: {{ $matchupCount }},
+                        matchups: @js(old('matchups', array_fill(0, $matchupCount, ['a' => '', 'b' => '']))),
                         pasteText: '',
                         fillFromList() {
                             const lines = this.pasteText.split('\n').map(l => l.trim()).filter(l => l !== '');
-                            for (let i = 0; i < 16; i++) {
+                            for (let i = 0; i < this.count; i++) {
                                 this.matchups[i] = { a: lines[i*2] || '', b: lines[i*2+1] || '' };
                             }
                         }
                      }">
-                    <h3 class="font-semibold text-gray-800 mb-2">Load the 32 teams</h3>
+                    <h3 class="font-semibold text-gray-800 mb-2">Load {{ $startRoundLabel }} teams</h3>
                     <p class="text-sm text-gray-500 mb-4">
-                        Enter both teams for each of the 16 Round-of-32 matchups. The rest of the bracket
-                        (R16 → Final + Third Place) is generated automatically.
+                        Enter both teams for each of the {{ $matchupCount }} {{ $startRoundLabel }} matchups.
+                        @if ($startRound !== 'FINAL')
+                            The upper bracket (onwards to Final + Third Place) is generated automatically.
+                        @endif
                     </p>
 
                     @if ($errors->any())
@@ -70,7 +73,7 @@
                     {{-- Quick fill helper --}}
                     <div class="mb-6 border rounded-md p-4 bg-gray-50">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Quick fill — paste 32 team names, one per line
+                            Quick fill — paste {{ $pool->startRoundTeamCount() }} team names, one per line
                         </label>
                         <textarea x-model="pasteText" rows="4"
                                   class="w-full text-sm border-gray-300 rounded-md"

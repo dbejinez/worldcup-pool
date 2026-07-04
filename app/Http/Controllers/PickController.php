@@ -65,6 +65,7 @@ class PickController extends Controller
             'finalScoreB' => $membership->final_score_b,
             'canEdit' => $canEdit,
             'closedReason' => $closedReason,
+            'roundsFromStart' => $pool->roundsFromStart(),
         ]);
     }
 

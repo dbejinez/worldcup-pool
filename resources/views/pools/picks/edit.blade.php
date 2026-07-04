@@ -16,7 +16,8 @@
                 picks: @js($existingPicks),
                 finalScoreA: @js($finalScoreA),
                 finalScoreB: @js($finalScoreB),
-                canEdit: @js($canEdit)
+                canEdit: @js($canEdit),
+                roundsFromStart: @js($roundsFromStart)
              })">
 
             @if ($errors->any())
@@ -141,7 +142,7 @@
                 finalScoreB: config.finalScoreB ?? '',
                 canEdit: config.canEdit,
                 byId: {},
-                roundOrder: ['R32', 'R16', 'QF', 'SF', 'THIRD', 'FINAL'],
+                roundOrder: config.roundsFromStart || ['R32', 'R16', 'QF', 'SF', 'THIRD', 'FINAL'],
 
                 init() {
                     this.matches.forEach(m => this.byId[m.id] = m);
@@ -162,10 +163,10 @@
                 slotTeam(id, slot) {
                     const m = this.byId[id];
                     if (!m) return null;
-                    if (m.round === 'R32') return slot === 'A' ? m.team_a_id : m.team_b_id;
 
                     const src = slot === 'A' ? m.srcA : m.srcB;
-                    if (!src) return null;
+                    // No feeder → this is the starting round; return the seeded team.
+                    if (!src) return slot === 'A' ? m.team_a_id : m.team_b_id;
                     if (src.type === 'winner') return this.picks[src.match] ?? null;
 
                     // loser of the child match
@@ -224,8 +225,9 @@
                 },
 
                 // Drop any pick whose chosen team is no longer a valid participant.
+                // Skip the starting round — its teams are seeded and always valid.
                 normalize() {
-                    ['R16', 'QF', 'SF', 'THIRD', 'FINAL'].forEach(r => {
+                    this.roundOrder.slice(1).forEach(r => {
                         this.matchesInRound(r).forEach(m => {
                             const [a, b] = this.participants(m.id);
                             const p = this.picks[m.id];

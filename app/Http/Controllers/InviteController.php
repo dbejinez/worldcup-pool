@@ -186,6 +186,41 @@ class InviteController extends Controller
         return true;
     }
 
+    /**
+     * Public pool-link landing (no email required). Authenticated users are
+     * auto-joined as players; guests are sent to register and return here.
+     */
+    public function showPool(Request $request, string $token): View|RedirectResponse
+    {
+        $pool = Pool::where('join_token', $token)->first();
+
+        if (! $pool || ! $pool->isApproved()) {
+            return view('invites.pool', ['pool' => null, 'token' => $token]);
+        }
+
+        if (Auth::check()) {
+            $user = $request->user();
+
+            if ($pool->memberships()->where('user_id', $user->id)->exists()) {
+                return redirect()->route('pools.show', $pool)
+                    ->with('status', "You're already in {$pool->name}.");
+            }
+
+            $pool->memberships()->create([
+                'user_id' => $user->id,
+                'role' => 'player',
+                'joined_at' => now(),
+            ]);
+
+            return redirect()->route('pools.show', $pool)
+                ->with('status', "You've joined {$pool->name}!");
+        }
+
+        $request->session()->put('url.intended', route('pool.join', $token));
+
+        return view('invites.pool', ['pool' => $pool, 'token' => $token]);
+    }
+
     private function inviteIsValid(?Invite $invite): bool
     {
         return $invite !== null

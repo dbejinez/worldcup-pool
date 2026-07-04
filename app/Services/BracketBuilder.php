@@ -9,19 +9,22 @@ use Illuminate\Support\Facades\DB;
 class BracketBuilder
 {
     /**
-     * Build the full knockout bracket for a pool from 16 Round-of-32 matchups.
+     * Build the knockout bracket for a pool from the starting-round matchups.
      *
-     * Each matchup is ['a' => 'Team Name', 'b' => 'Team Name']. This creates the
-     * 32 teams, the 16 R32 matches (seeded with those teams), and the empty
-     * skeleton above them (R16, QF, SF, Third Place, Final) wired together so
-     * results propagate up the tree and SF losers drop into the Third Place match.
+     * For full-bracket pools the starting round is configurable (R32, R16, QF,
+     * SF, or FINAL). Incremental pools always start at R32.
+     *
+     * Each matchup is ['a' => 'Team Name', 'b' => 'Team Name']. Teams are
+     * created, the upper-bracket skeleton is wired top-down, and the starting
+     * round's matches are seeded with those teams.
      *
      * @param  array<int, array{a: string, b: string}>  $matchups
      */
     public function build(Pool $pool, array $matchups): void
     {
-        DB::transaction(function () use ($pool, $matchups) {
-            // 1. Create the 32 teams, keeping their R32 pairings in order.
+        $startRound = $pool->isIncremental() ? 'R32' : ($pool->start_round ?? 'R32');
+
+        DB::transaction(function () use ($pool, $matchups, $startRound) {
             $pairs = [];
             foreach ($matchups as $m) {
                 $nameA = trim($m['a']);
@@ -31,8 +34,13 @@ class BracketBuilder
                 $pairs[] = [$a->id, $b->id];
             }
 
-            // 2. Create the upper bracket first so we have IDs to wire winners into.
             $final = $pool->matches()->create(['round' => 'FINAL', 'position' => 1]);
+
+            if ($startRound === 'FINAL') {
+                $final->update(['team_a_id' => $pairs[0][0], 'team_b_id' => $pairs[0][1]]);
+                return;
+            }
+
             $third = $pool->matches()->create(['round' => 'THIRD', 'position' => 1]);
 
             $sf = [];
@@ -47,12 +55,28 @@ class BracketBuilder
                 ]);
             }
 
+            if ($startRound === 'SF') {
+                $this->seedMatchArray($sf, $pairs);
+                return;
+            }
+
             $qf = $this->createRound($pool, 'QF', 4, $sf);
+
+            if ($startRound === 'QF') {
+                $this->seedMatchArray($qf, $pairs);
+                return;
+            }
+
             $r16 = $this->createRound($pool, 'R16', 8, $qf);
 
-            // 3. R32: seed the teams and wire winners into R16.
+            if ($startRound === 'R16') {
+                $this->seedMatchArray($r16, $pairs);
+                return;
+            }
+
+            // R32 (default): create and seed in one step.
             for ($i = 1; $i <= 16; $i++) {
-                $parent = $r16[intdiv($i + 1, 2)]; // ceil(i/2)
+                $parent = $r16[intdiv($i + 1, 2)];
                 [$aId, $bId] = $pairs[$i - 1];
                 $pool->matches()->create([
                     'round' => 'R32',
@@ -76,7 +100,7 @@ class BracketBuilder
     {
         $matches = [];
         for ($i = 1; $i <= $count; $i++) {
-            $parent = $parents[intdiv($i + 1, 2)]; // ceil(i/2)
+            $parent = $parents[intdiv($i + 1, 2)];
             $matches[$i] = $pool->matches()->create([
                 'round' => $round,
                 'position' => $i,
@@ -86,5 +110,18 @@ class BracketBuilder
         }
 
         return $matches;
+    }
+
+    /**
+     * Stamp team pairs onto an already-created set of matches (the starting round).
+     *
+     * @param  array<int, \App\Models\BracketMatch>  $matches  1-indexed
+     * @param  array<int, array{int, int}>  $pairs
+     */
+    private function seedMatchArray(array $matches, array $pairs): void
+    {
+        foreach ($pairs as $i => $pair) {
+            $matches[$i + 1]->update(['team_a_id' => $pair[0], 'team_b_id' => $pair[1]]);
+        }
     }
 }

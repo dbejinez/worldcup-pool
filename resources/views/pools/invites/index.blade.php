@@ -14,6 +14,37 @@
                 <div class="px-4 py-3 bg-red-100 text-red-800 rounded-md">{{ session('error') }}</div>
             @endif
 
+            {{-- Shareable join link --}}
+            @php($joinUrl = route('pool.join', $pool->join_token))
+            @php($waText = urlencode("Join my World Cup pool "{$pool->name}" — click to sign up and make your picks: {$joinUrl}"))
+            <div class="bg-white shadow-sm sm:rounded-lg p-6" x-data="{ copied: false }">
+                <h3 class="font-semibold text-gray-800 mb-1">Share link (no email needed)</h3>
+                <p class="text-sm text-gray-500 mb-3">
+                    Anyone with this link can register and join the pool. Share it on WhatsApp or anywhere else.
+                </p>
+                <div class="flex flex-wrap items-center gap-2">
+                    <input type="text" readonly value="{{ $joinUrl }}"
+                           class="flex-1 min-w-0 text-xs bg-gray-50 border-gray-200 rounded-md text-gray-600">
+                    <button type="button"
+                            @click="navigator.clipboard.writeText(@js($joinUrl)); copied = true; setTimeout(() => copied = false, 1500)"
+                            class="px-3 py-1.5 text-xs font-semibold uppercase rounded bg-gray-700 text-white hover:bg-gray-600 whitespace-nowrap">
+                        <span x-show="!copied">Copy link</span>
+                        <span x-show="copied" x-cloak>Copied!</span>
+                    </button>
+                    <a href="https://wa.me/?text={{ $waText }}"
+                       target="_blank" rel="noopener"
+                       class="px-3 py-1.5 text-xs font-semibold uppercase rounded bg-green-600 text-white hover:bg-green-500 whitespace-nowrap">
+                        WhatsApp
+                    </a>
+                </div>
+                <form method="POST" action="{{ route('pools.join-link.regenerate', $pool) }}"
+                      class="mt-3"
+                      onsubmit="return confirm('This will invalidate the current link. Continue?');">
+                    @csrf
+                    <button type="submit" class="text-xs text-red-500 hover:underline">Regenerate link</button>
+                </form>
+            </div>
+
             {{-- Add emails --}}
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 <h3 class="font-semibold text-gray-800 mb-2">Add players</h3>

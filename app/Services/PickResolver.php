@@ -48,13 +48,11 @@ class PickResolver
             return null;
         }
 
-        if ($m->round === 'R32') {
-            return $slot === 'A' ? $m->team_a_id : $m->team_b_id;
-        }
-
         $src = $this->sources[$matchId][$slot] ?? null;
+
+        // No feeder into this slot means it's the starting round — return seeded team.
         if (! $src) {
-            return null;
+            return $slot === 'A' ? $m->team_a_id : $m->team_b_id;
         }
 
         if ($src['type'] === 'winner') {

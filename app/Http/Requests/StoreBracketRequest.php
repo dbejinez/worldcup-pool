@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Pool;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -17,8 +18,10 @@ class StoreBracketRequest extends FormRequest
      */
     public function rules(): array
     {
+        $count = $this->matchupCount();
+
         return [
-            'matchups' => ['required', 'array', 'size:16'],
+            'matchups' => ['required', 'array', "size:{$count}"],
             'matchups.*.a' => ['required', 'string', 'max:100'],
             'matchups.*.b' => ['required', 'string', 'max:100'],
         ];
@@ -37,8 +40,9 @@ class StoreBracketRequest extends FormRequest
                 }
             }
 
-            if (count($names) === 32 && count(array_unique($names)) !== 32) {
-                $v->errors()->add('matchups', 'All 32 team names must be unique.');
+            $expected = $this->matchupCount() * 2;
+            if (count($names) === $expected && count(array_unique($names)) !== $expected) {
+                $v->errors()->add('matchups', "All {$expected} team names must be unique.");
             }
         });
     }
@@ -48,10 +52,19 @@ class StoreBracketRequest extends FormRequest
      */
     public function messages(): array
     {
+        $count = $this->matchupCount();
+
         return [
-            'matchups.size' => 'You must provide all 16 Round-of-32 matchups.',
+            'matchups.size' => "You must provide all {$count} matchups for the starting round.",
             'matchups.*.a.required' => 'Every matchup needs both teams.',
             'matchups.*.b.required' => 'Every matchup needs both teams.',
         ];
+    }
+
+    private function matchupCount(): int
+    {
+        $pool = $this->route('pool');
+
+        return ($pool instanceof Pool) ? $pool->startRoundMatchCount() : 16;
     }
 }
