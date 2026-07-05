@@ -226,10 +226,10 @@
                             <a href="{{ route('pools.invites.index', $pool) }}" class="text-indigo-600 underline">
                                 {{ __('Invite players') }}
                             </a>
-                            @php($acceptedInvites = $pool->invites->where('status', 'accepted')->count())
-                            <span title="{{ __('Accepted / invited players') }}"
-                                  class="text-xs font-semibold uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">
-                                {{ $acceptedInvites }}/{{ $pool->invites->count() }}
+                            @php($playerCount = $pool->memberships->where('role', 'player')->count())
+                            <span title="{{ __(':count players joined', ['count' => $playerCount]) }}"
+                                  class="text-xs font-semibold uppercase px-2 py-0.5 rounded {{ $playerCount > 0 ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800' }}">
+                                {{ $playerCount }} {{ __('joined') }}
                             </span>
                         </li>
                     </ul>

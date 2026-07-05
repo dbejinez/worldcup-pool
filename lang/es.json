@@ -49,6 +49,8 @@
     "Set the pick deadline": "Definir fecha límite de pronósticos",
     "Invite players": "Invitar jugadores",
     "Accepted / invited players": "Jugadores aceptados / invitados",
+    "joined": "unidos",
+    ":count players joined": ":count jugadores unidos",
     "Reset password": "Restablecer contraseña",
     "Generate a new temporary password for :name? Their current password will stop working.": "¿Generar una nueva contraseña temporal para :name? Su contraseña actual dejará de funcionar.",
     "Your temporary password for": "Tu contraseña temporal para",
