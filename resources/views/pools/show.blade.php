@@ -52,18 +52,23 @@
                 {{-- Overview --}}
                 <div class="bg-white shadow-sm sm:rounded-lg p-6 md:col-span-2 space-y-3">
                     <h3 class="font-semibold text-gray-800">{{ __('Overview') }}</h3>
+                    @php($isManagerOrAdmin = $membership->isManager() || auth()->user()->is_admin)
                     <dl class="text-sm text-gray-700 grid grid-cols-2 gap-y-2">
                         <dt class="text-gray-500">{{ __('Your role') }}</dt>
                         <dd class="font-medium">{{ $membership->role === 'manager' ? __('Manager') : __('Player') }}</dd>
 
-                        <dt class="text-gray-500">{{ __('Type') }}</dt>
-                        <dd class="font-medium">{{ $pool->isIncremental() ? __('Incremental') : __('Full bracket') }}</dd>
+                        @if ($isManagerOrAdmin)
+                            <dt class="text-gray-500">{{ __('Type') }}</dt>
+                            <dd class="font-medium">{{ $pool->isIncremental() ? __('Incremental') : __('Full bracket') }}</dd>
+                        @endif
 
-                        <dt class="text-gray-500">{{ __('Status') }}</dt>
+                        <dt class="text-gray-500">{{ __('Pool Status') }}</dt>
                         <dd class="font-medium">{{ __($pool->status) }}</dd>
 
-                        <dt class="text-gray-500">{{ __('Teams loaded') }}</dt>
-                        <dd class="font-medium">{{ $pool->teams->count() }} / {{ $pool->startRoundTeamCount() }}</dd>
+                        @if ($isManagerOrAdmin)
+                            <dt class="text-gray-500">{{ __('Teams loaded') }}</dt>
+                            <dd class="font-medium">{{ $pool->teams->count() }} / {{ $pool->startRoundTeamCount() }}</dd>
+                        @endif
 
                         <dt class="text-gray-500">{{ __('Pick deadline (target)') }}</dt>
                         <dd class="font-medium">
@@ -170,7 +175,12 @@
                 <ul class="divide-y">
                     @foreach ($pool->memberships as $m)
                         <li class="py-2 flex items-center justify-between text-sm gap-3">
-                            <span class="min-w-0 truncate">{{ $m->user->name }} <span class="text-gray-400">{{ $m->user->email }}</span></span>
+                            <span class="min-w-0 truncate">
+                                {{ $m->user->name }}
+                                @if ($isManagerOrAdmin)
+                                    <span class="text-gray-400">{{ $m->user->email }}</span>
+                                @endif
+                            </span>
                             <div class="flex items-center gap-3 shrink-0">
                                 @if ($membership->isManager())
                                     <form method="POST" action="{{ route('pools.members.reset-password', [$pool, $m->user_id]) }}"
