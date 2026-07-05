@@ -167,7 +167,7 @@ class StandingsTest extends TestCase
                 $picks[$m->id] = $a;
             }
         }
-        $this->actingAs($player)->put(route('pools.picks.update', $pool), ['picks' => $picks, 'final_score_a' => 1, 'final_score_b' => 1]);
+        $this->actingAs($player)->put(route('pools.picks.update', $pool), ['picks' => $picks, 'final_score_a' => 2, 'final_score_b' => 1]);
 
         return $player;
     }
@@ -218,5 +218,76 @@ class StandingsTest extends TestCase
         $this->actingAs($manager)
             ->get(route('pools.picks.show', [$pool, $p2->id]))
             ->assertOk();
+    }
+
+    // --- Standings page pick/champion visibility ---
+
+    public function test_standings_shows_hidden_warning_while_pool_is_open(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->openPoolWithBracket($manager);
+        $player = $this->addPlayerWithPicks($pool);
+
+        $this->actingAs($player)
+            ->get(route('pools.standings', $pool))
+            ->assertOk()
+            ->assertSee("Other players' picks stay hidden until they're revealed.");
+    }
+
+    public function test_champion_pick_and_picks_link_hidden_from_other_players_while_pool_open(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->openPoolWithBracket($manager);
+        $p1 = $this->addPlayerWithPicks($pool);
+        $p2 = $this->addPlayerWithPicks($pool);
+
+        $response = $this->actingAs($p1)->get(route('pools.standings', $pool));
+
+        $response->assertOk();
+        // p2's champion pick and view-picks link are hidden
+        $response->assertSee('hidden');
+        $response->assertDontSee(route('pools.picks.show', [$pool, $p2->id]));
+    }
+
+    public function test_player_always_sees_own_picks_link_in_standings(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->openPoolWithBracket($manager);
+        $player = $this->addPlayerWithPicks($pool);
+
+        $this->actingAs($player)
+            ->get(route('pools.standings', $pool))
+            ->assertOk()
+            ->assertSee(route('pools.picks.show', [$pool, $player->id]));
+    }
+
+    public function test_champion_pick_and_picks_link_visible_after_pool_locked(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->openPoolWithBracket($manager);
+        $p1 = $this->addPlayerWithPicks($pool);
+        $p2 = $this->addPlayerWithPicks($pool);
+
+        $pool->update(['status' => 'locked']);
+
+        $response = $this->actingAs($p1)->get(route('pools.standings', $pool));
+
+        $response->assertOk();
+        // Warning banner gone
+        $response->assertDontSee("Other players' picks stay hidden until they're revealed.");
+        // View-picks link for p2 now appears
+        $response->assertSee(route('pools.picks.show', [$pool, $p2->id]));
+    }
+
+    public function test_manager_sees_all_picks_links_before_pool_closed(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->openPoolWithBracket($manager);
+        $player = $this->addPlayerWithPicks($pool);
+
+        $this->actingAs($manager)
+            ->get(route('pools.standings', $pool))
+            ->assertOk()
+            ->assertSee(route('pools.picks.show', [$pool, $player->id]));
     }
 }
