@@ -40,7 +40,7 @@
                                 </form>
                             @else
                                 <form method="POST" action="{{ route('pools.rounds.lock', [$pool, $round]) }}"
-                                      onsubmit="return confirm('Lock {{ $roundLabels[$round] }} picks? Players can no longer change them, and the picks become visible.');">
+                                      onsubmit="return confirm(@js(__('Lock :round picks? Players can no longer change them, and the picks become visible.', ['round' => $roundLabels[$round]])));">
                                     @csrf
                                     <button type="submit" class="text-xs font-semibold uppercase px-3 py-1 rounded bg-red-600 text-white hover:bg-red-500">{{ __('Lock picks') }}</button>
                                 </form>
@@ -98,7 +98,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <x-primary-button>{{ __('Save ' . $roundLabels[$round]) }}</x-primary-button>
+                        <x-primary-button>{{ __('Save :round', ['round' => $roundLabels[$round]]) }}</x-primary-button>
                     </div>
                     </form>
                 </div>
