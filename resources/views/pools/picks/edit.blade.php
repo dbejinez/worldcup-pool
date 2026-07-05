@@ -17,7 +17,15 @@
                 finalScoreA: @js($finalScoreA),
                 finalScoreB: @js($finalScoreB),
                 canEdit: @js($canEdit),
-                roundsFromStart: @js($roundsFromStart)
+                roundsFromStart: @js($roundsFromStart),
+                roundLabels: @js([
+                    'R32'   => __('Round of 32'),
+                    'R16'   => __('Round of 16'),
+                    'QF'    => __('Quarterfinals'),
+                    'SF'    => __('Semifinals'),
+                    'THIRD' => __('Third Place Match'),
+                    'FINAL' => __('Final'),
+                ])
              })">
 
             {{-- How-to strip --}}
@@ -181,6 +189,7 @@
                 canEdit: config.canEdit,
                 byId: {},
                 roundOrder: config.roundsFromStart || ['R32', 'R16', 'QF', 'SF', 'THIRD', 'FINAL'],
+                roundLabels: config.roundLabels || {},
 
                 init() {
                     this.matches.forEach(m => this.byId[m.id] = m);
@@ -188,10 +197,7 @@
                 },
 
                 roundLabel(r) {
-                    return {
-                        R32: 'Round of 32', R16: 'Round of 16', QF: 'Quarterfinals',
-                        SF: 'Semifinals', THIRD: 'Third Place Match', FINAL: 'Final',
-                    }[r] || r;
+                    return this.roundLabels[r] || r;
                 },
 
                 matchesInRound(r) {

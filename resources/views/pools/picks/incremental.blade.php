@@ -41,7 +41,7 @@
                 @php($r = $rounds[$round])
                 <div class="bg-white shadow-sm sm:rounded-lg p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-semibold text-gray-800">{{ $r['label'] }}</h3>
+                        <h3 class="font-semibold text-gray-800">{{ __($r['label']) }}</h3>
                         @if ($r['complete'])
                             <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{{ __('finished') }}</span>
                         @elseif ($r['locked'])
@@ -112,7 +112,7 @@
                                 </div>
                             @endif
 
-                            <x-primary-button>{{ __('Save :round', ['round' => $r['label']]) }}</x-primary-button>
+                            <x-primary-button>{{ __('Save :round', ['round' => __($r['label'])]) }}</x-primary-button>
                         </form>
                     @elseif ($r['locked'] || $r['complete'])
                         {{-- Locked or finished: show this player's picks read-only --}}
@@ -147,7 +147,7 @@
                             @if ($round === 'R32')
                                 {{ __('Opens when the manager opens the pool for picks.') }}
                             @else
-                                {{ __('Opens after the :round results are in.', ['round' => $labels[$feeders[$round] ?? ''] ?? __('previous round')]) }}
+                                {{ __('Opens after the :round results are in.', ['round' => __($labels[$feeders[$round] ?? ''] ?? 'previous round')]) }}
                             @endif
                         </p>
                     @endif
