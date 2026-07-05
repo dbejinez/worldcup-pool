@@ -11,7 +11,7 @@
             <div class="text-center">
                 <h2 class="text-lg font-semibold text-gray-800">{{ __("You're invited!") }}</h2>
                 <p class="mt-1 text-sm text-gray-600">
-                    Join the World Cup pool <strong>{{ $pool->name }}</strong> as a player.
+                    {!! __('Join the World Cup pool :pool as a player.', ['pool' => '<strong>' . e($pool->name) . '</strong>']) !!}
                 </p>
             </div>
 
