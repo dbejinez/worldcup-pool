@@ -214,6 +214,92 @@ class ScoringTest extends TestCase
             ->assertOk();
     }
 
+    // --- Partial round results ---
+
+    /**
+     * Enter results for only $count matches in a round (by position order).
+     * Returns the match IDs that were given a result.
+     *
+     * @return int[]
+     */
+    private function enterPartialRound(User $manager, Pool $pool, string $round, int $count): array
+    {
+        $winners = [];
+        foreach ($pool->matches()->where('round', $round)->orderBy('position')->take($count)->get() as $m) {
+            if ($m->team_a_id) {
+                $winners[$m->id] = $m->team_a_id;
+            }
+        }
+        $this->actingAs($manager)->put(route('pools.results.update', $pool), ['winners' => $winners]);
+
+        return array_keys($winners);
+    }
+
+    public function test_partial_r16_results_score_correctly_and_do_not_corrupt_qf(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->openPoolWithBracket($manager);
+        $player = $this->addPlayerWithPicks($pool);
+
+        // Complete R32 so R16 teams are known.
+        $this->enterRound($manager, $pool, 'R32');
+
+        // Enter only 3 of 8 R16 matches.
+        $decidedIds = $this->enterPartialRound($manager, $pool, 'R16', 3);
+        $this->assertCount(3, $decidedIds);
+
+        // Score: 16 (R32 × 1pt) + 3 × 2pt (R16 partial, all picked correctly).
+        $membership = $pool->memberships()->where('user_id', $player->id)->first();
+        $this->assertSame(22, $membership->score);
+        $this->assertSame(19, $membership->correct_picks);
+
+        // The 3 decided R16 matches recorded winners.
+        $this->assertSame(3, $pool->matches()
+            ->where('round', 'R16')->whereNotNull('actual_winner_team_id')->count());
+
+        // The other 5 R16 matches are still undecided.
+        $this->assertSame(5, $pool->matches()
+            ->where('round', 'R16')->whereNull('actual_winner_team_id')->count());
+
+        // QF is not fully populated: at least some matches still await participants.
+        $qfMissingParticipant = $pool->matches()
+            ->where('round', 'QF')
+            ->where(fn ($q) => $q->whereNull('team_a_id')->orWhereNull('team_b_id'))
+            ->count();
+        $this->assertGreaterThan(0, $qfMissingParticipant,
+            'Some QF matches should still be missing a participant');
+
+        // No QF result has been entered — next round is completely untouched.
+        $this->assertSame(0, $pool->matches()
+            ->where('round', 'QF')->whereNotNull('actual_winner_team_id')->count());
+
+        // Pool is still open (not auto-completed).
+        $this->assertNotSame('complete', $pool->fresh()->status);
+    }
+
+    public function test_completing_remaining_r16_results_fully_populates_qf(): void
+    {
+        $manager = User::factory()->create();
+        $pool = $this->openPoolWithBracket($manager);
+        $player = $this->addPlayerWithPicks($pool);
+
+        $this->enterRound($manager, $pool, 'R32');
+        $this->enterPartialRound($manager, $pool, 'R16', 3);
+
+        // Now complete the remaining 5 R16 matches.
+        $this->enterRound($manager, $pool, 'R16');
+
+        // Full R16 score: 16 + 8×2 = 32.
+        $membership = $pool->memberships()->where('user_id', $player->id)->first();
+        $this->assertSame(32, $membership->score);
+
+        // All QF matches should now have both participants.
+        $pool->matches()->where('round', 'QF')->get()->each(function ($qf) {
+            $this->assertNotNull($qf->team_a_id, "QF match {$qf->position} team_a_id is null after all R16 decided");
+            $this->assertNotNull($qf->team_b_id, "QF match {$qf->position} team_b_id is null after all R16 decided");
+        });
+    }
+
     public function test_sf_start_pool_results_do_not_wipe_seeded_teams(): void
     {
         $manager = User::factory()->create();
