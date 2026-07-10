@@ -17,7 +17,12 @@ Route::get('/', function () {
 Route::post('locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $memberships = auth()->user()
+        ->memberships()
+        ->with(['pool.scoringConfig', 'pool.teams', 'pool.memberships'])
+        ->latest()
+        ->get();
+    return view('dashboard', compact('memberships'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
