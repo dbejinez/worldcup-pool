@@ -7,6 +7,12 @@ use App\Models\User;
 
 class PoolPolicy
 {
+    /** Admins bypass all pool-level checks. */
+    public function before(User $user, string $ability): ?bool
+    {
+        return $user->is_admin ? true : null;
+    }
+
     /**
      * Any member (manager or player) may view the pool.
      */

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePoolRequest;
 use App\Http\Requests\UpdatePoolSettingsRequest;
 use App\Models\Pool;
+use App\Models\PoolMembership;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,17 +18,27 @@ use Illuminate\View\View;
 class PoolController extends Controller
 {
     /**
-     * List the pools the current user belongs to.
+     * List pools. Admins also see every other pool in the system.
      */
     public function index(Request $request): View
     {
-        $memberships = $request->user()
-            ->memberships()
+        $user = $request->user();
+
+        $memberships = $user->memberships()
             ->with('pool.creator')
             ->latest()
             ->get();
 
-        return view('pools.index', compact('memberships'));
+        $otherPools = collect();
+        if ($user->is_admin) {
+            $myPoolIds = $memberships->pluck('pool_id')->all() ?: [0];
+            $otherPools = Pool::whereNotIn('id', $myPoolIds)
+                ->with(['creator', 'memberships'])
+                ->latest()
+                ->get();
+        }
+
+        return view('pools.index', compact('memberships', 'otherPools'));
     }
 
     /**
@@ -92,6 +103,15 @@ class PoolController extends Controller
         $membership = $pool->memberships()
             ->where('user_id', $request->user()->id)
             ->first();
+
+        // Admin viewing a pool they're not a member of: give full manager access in the view.
+        if ($membership === null && $request->user()->is_admin) {
+            $membership = new PoolMembership([
+                'user_id' => $request->user()->id,
+                'pool_id' => $pool->id,
+                'role' => 'manager',
+            ]);
+        }
 
         $pool->load(['scoringConfig', 'memberships.user', 'teams', 'creator', 'invites']);
 
