@@ -59,6 +59,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pools/{pool}/picks-template', [\App\Http\Controllers\PickImportController::class, 'template'])->name('pools.picks.template');
     Route::post('/pools/{pool}/picks-import', [\App\Http\Controllers\PickImportController::class, 'import'])->name('pools.picks.import');
 
+    // Manager: bulk import all players + picks from Slack/Forms Excel export.
+    Route::get('/pools/{pool}/bulk-import',          [\App\Http\Controllers\BulkImportController::class, 'show'])   ->name('pools.picks.bulk-import.show');
+    Route::post('/pools/{pool}/bulk-import/preview', [\App\Http\Controllers\BulkImportController::class, 'preview'])->name('pools.picks.bulk-import.preview');
+    Route::post('/pools/{pool}/bulk-import',         [\App\Http\Controllers\BulkImportController::class, 'import']) ->name('pools.picks.bulk-import');
+    Route::post('/pools/{pool}/bulk-import/cancel',  [\App\Http\Controllers\BulkImportController::class, 'cancel']) ->name('pools.picks.bulk-import.cancel');
+
     // Manager: enter match results.
     Route::get('/pools/{pool}/results', [ResultController::class, 'edit'])->name('pools.results.edit');
     Route::put('/pools/{pool}/results', [ResultController::class, 'update'])->name('pools.results.update');

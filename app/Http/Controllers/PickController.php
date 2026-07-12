@@ -56,8 +56,8 @@ class PickController extends Controller
                 'player' => $request->user(),
                 'matches' => $matches,
                 'picks' => $picks,
-                'teams' => $pool->teams()->pluck('name', 'id'),
-                'teamCodes' => $pool->teams()->pluck('country_code', 'id'),
+                'teams' => $pool->teams->pluck('name', 'id'),
+                'teamCodes' => $pool->teams->pluck('country_code', 'id'),
                 'membership' => $membership,
                 'roundOrder' => $pool->roundsFromStart(),
                 'showFinalScore' => true,
@@ -71,8 +71,8 @@ class PickController extends Controller
         return view('pools.picks.edit', [
             'pool' => $pool,
             'matchesData' => $resolver->frontendMatches(),
-            'teams' => $pool->teams()->pluck('name', 'id'),
-            'teamCodes' => $pool->teams()->pluck('country_code', 'id'),
+            'teams' => $pool->teams->pluck('name', 'id'),
+            'teamCodes' => $pool->teams->pluck('country_code', 'id'),
             'existingPicks' => $picks,
             'finalScoreA' => $membership->final_score_a,
             'finalScoreB' => $membership->final_score_b,
@@ -113,8 +113,8 @@ class PickController extends Controller
             'pool' => $pool,
             'rounds' => $rounds,
             'picks' => $picks,
-            'teams' => $pool->teams()->pluck('name', 'id'),
-            'teamCodes' => $pool->teams()->pluck('country_code', 'id'),
+            'teams' => $pool->teams->pluck('name', 'id'),
+            'teamCodes' => $pool->teams->pluck('country_code', 'id'),
             'finalScoreA' => $membership->final_score_a,
             'finalScoreB' => $membership->final_score_b,
             'feeders' => Pool::ROUND_FEEDER,
@@ -241,7 +241,7 @@ class PickController extends Controller
             ->where('user_id', $user->id)
             ->pluck('predicted_winner_team_id', 'bracket_match_id');
 
-        $teams = $pool->teams()->pluck('name', 'id');
+        $teams = $pool->teams->pluck('name', 'id');
         $membership = $pool->memberships()->where('user_id', $user->id)->first();
 
         return view('pools.picks.show', [
@@ -250,7 +250,7 @@ class PickController extends Controller
             'matches' => $matches,
             'picks' => $picks,
             'teams' => $teams,
-            'teamCodes' => $pool->teams()->pluck('country_code', 'id'),
+            'teamCodes' => $pool->teams->pluck('country_code', 'id'),
             'membership' => $membership,
             'roundOrder' => $visibleRounds,
             'showFinalScore' => $showFinalScore,

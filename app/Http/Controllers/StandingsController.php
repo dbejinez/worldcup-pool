@@ -36,8 +36,8 @@ class StandingsController extends Controller
             'champion' => $final?->actualWinner,
             'finalPicks' => $finalPicks,
             'championsVisible' => $championsVisible,
-            'teamNames' => $pool->teams()->pluck('name', 'id'),
-            'teamCodes' => $pool->teams()->pluck('country_code', 'id'),
+            'teamNames' => $pool->teams->pluck('name', 'id'),
+            'teamCodes' => $pool->teams->pluck('country_code', 'id'),
         ]);
     }
 }

@@ -106,6 +106,10 @@
                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md font-semibold text-xs uppercase tracking-widest hover:bg-gray-50">
                         {{ __('Import picks') }}
                     </a>
+                    <a href="{{ route('pools.picks.bulk-import.show', $pool) }}"
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md font-semibold text-xs uppercase tracking-widest hover:bg-gray-50">
+                        {{ __('Bulk import from Slack') }}
+                    </a>
                 @endif
 
                 @if ($hasBracket)
@@ -242,6 +246,14 @@
                                 {{ $playerCount }} {{ __('joined') }}
                             </span>
                         </li>
+                        @if ($hasBracket)
+                            <li class="flex items-center gap-2">
+                                <span>⑤</span>
+                                <a href="{{ route('pools.picks.bulk-import.show', $pool) }}" class="text-indigo-600 underline">
+                                    {{ __('Bulk import picks from Slack / Forms') }}
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </div>
             @endif

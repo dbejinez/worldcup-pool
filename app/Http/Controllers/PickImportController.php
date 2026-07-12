@@ -147,7 +147,10 @@ class PickImportController extends Controller
         abort_unless($pool->teams()->exists(), 404, 'This pool has no bracket yet.');
         abort_unless(($pool->start_round ?? 'R32') === 'R32', 404, 'Bulk import is only available for Round of 32 start pools.');
 
-        $request->validate(['file' => ['required', 'file', 'max:2048']]);
+        $request->validate(['file' => [
+            'required', 'file', 'max:2048',
+            'mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip,application/octet-stream,text/csv,text/plain',
+        ]]);
 
         if (! $pool->picksOpen()) {
             return back()->with('error', __('The pool must be open for picks to import.'));
